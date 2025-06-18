@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -314,10 +313,10 @@ const RideHistory = () => {
                       <TableCell>
                         <div className="flex gap-1">
                           {hasChecklistMismatches(deployment) && (
-                            <AlertTriangle className="w-4 h-4 text-red-500" title="Checklist Mismatches" />
+                            <AlertTriangle className="w-4 h-4 text-red-500" />
                           )}
                           {hasAttachments(deployment) && (
-                            <Paperclip className="w-4 h-4 text-blue-500" title="Has Attachments" />
+                            <Paperclip className="w-4 h-4 text-blue-500" />
                           )}
                         </div>
                       </TableCell>
