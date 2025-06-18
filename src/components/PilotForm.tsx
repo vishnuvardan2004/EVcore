@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -76,6 +75,14 @@ export const PilotForm: React.FC<PilotFormProps> = ({
 
   const handleInputChange = (field: string, value: string | number) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleDriverChecklistChange = (checklist: DriverChecklist | VehicleChecklist) => {
+    setDriverChecklist(checklist as DriverChecklist);
+  };
+
+  const handleVehicleChecklistChange = (checklist: DriverChecklist | VehicleChecklist) => {
+    setVehicleChecklist(checklist as VehicleChecklist);
   };
 
   const handleScanSupervisor = () => {
@@ -215,7 +222,7 @@ export const PilotForm: React.FC<PilotFormProps> = ({
             <ChecklistSection
               type="driver"
               checklist={driverChecklist}
-              onChange={setDriverChecklist}
+              onChange={handleDriverChecklistChange}
             />
           );
 
@@ -310,7 +317,7 @@ export const PilotForm: React.FC<PilotFormProps> = ({
               <ChecklistSection
                 type="vehicle"
                 checklist={vehicleChecklist}
-                onChange={setVehicleChecklist}
+                onChange={handleVehicleChecklistChange}
               />
             </div>
           );
@@ -386,7 +393,7 @@ export const PilotForm: React.FC<PilotFormProps> = ({
               <ChecklistSection
                 type="vehicle"
                 checklist={vehicleChecklist}
-                onChange={setVehicleChecklist}
+                onChange={handleVehicleChecklistChange}
               />
             </div>
           );
@@ -397,7 +404,7 @@ export const PilotForm: React.FC<PilotFormProps> = ({
               <ChecklistSection
                 type="vehicle"
                 checklist={vehicleChecklist}
-                onChange={setVehicleChecklist}
+                onChange={handleVehicleChecklistChange}
                 mismatches={checklistMismatches}
                 showMismatches={true}
               />

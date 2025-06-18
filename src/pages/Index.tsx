@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { VehicleScanner } from '../components/VehicleScanner';
 import { DirectionSelector } from '../components/DirectionSelector';
@@ -170,7 +169,7 @@ const Index = () => {
   };
 
   const canGoOut = !vehicleData || vehicleData.status === 'IN';
-  const canComeIn = vehicleData && vehicleData.status === 'OUT' && vehicleData.currentDeployment;
+  const canComeIn = vehicleData && vehicleData.status === 'OUT' && Boolean(vehicleData.currentDeployment);
 
   return (
     <div className="min-h-screen bg-gray-50">
