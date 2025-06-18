@@ -27,7 +27,7 @@ const RideHistory = () => {
   const [driverNameFilter, setDriverNameFilter] = useState('');
   const [dateFromFilter, setDateFromFilter] = useState('');
   const [dateToFilter, setDateToFilter] = useState('');
-  const [purposeFilter, setPurposeFilter] = useState<string>('');
+  const [purposeFilter, setPurposeFilter] = useState<string>('all');
   const [supervisorFilter, setSupervisorFilter] = useState('');
 
   useEffect(() => {
@@ -87,7 +87,7 @@ const RideHistory = () => {
       }
 
       // Purpose filter
-      if (purposeFilter && deployment.purpose !== purposeFilter) {
+      if (purposeFilter && purposeFilter !== 'all' && deployment.purpose !== purposeFilter) {
         return false;
       }
 
@@ -112,7 +112,7 @@ const RideHistory = () => {
     setDriverNameFilter('');
     setDateFromFilter('');
     setDateToFilter('');
-    setPurposeFilter('');
+    setPurposeFilter('all');
     setSupervisorFilter('');
   };
 
@@ -201,7 +201,7 @@ const RideHistory = () => {
                   <SelectValue placeholder="All purposes" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All purposes</SelectItem>
+                  <SelectItem value="all">All purposes</SelectItem>
                   <SelectItem value="Office">Office</SelectItem>
                   <SelectItem value="Pilot">Pilot</SelectItem>
                 </SelectContent>
