@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { VehicleScanner } from './VehicleScanner';
 import { DirectionSelector } from './DirectionSelector';
@@ -10,6 +9,7 @@ import { vehicleService } from '../services/database';
 import { Vehicle, Deployment, TripSummary as TripSummaryType } from '../types/vehicle';
 import { calculateDuration } from '../utils/reportGenerator';
 import { useToast } from '../hooks/use-toast';
+import { useOfflineSync } from '../hooks/useOfflineSync';
 
 type AppStep = 
   | 'scanner' 
@@ -27,6 +27,7 @@ export const VehicleDeploymentForm: React.FC = () => {
   const [vehicleData, setVehicleData] = useState<Vehicle | null>(null);
   const [tripSummary, setTripSummary] = useState<TripSummaryType | null>(null);
   const { toast } = useToast();
+  const { submitFormData } = useOfflineSync();
 
   const handleVehicleDetected = async (vehicleNumber: string) => {
     setSelectedVehicle(vehicleNumber);
@@ -79,14 +80,11 @@ export const VehicleDeploymentForm: React.FC = () => {
           outData: formData.outData,
         };
         
-        await vehicleService.createDeployment(deployment);
+        const success = await submitFormData('deployment', deployment);
         
-        toast({
-          title: "Success",
-          description: `Vehicle ${selectedVehicle} marked as OUT`,
-        });
-        
-        resetApp();
+        if (success) {
+          resetApp();
+        }
       } else {
         // Handle IN flow
         if (vehicleData?.currentDeployment) {
@@ -97,28 +95,31 @@ export const VehicleDeploymentForm: React.FC = () => {
             totalKms: formData.inData.returnOdometer - vehicleData.currentDeployment.outData!.odometer,
           };
           
-          await vehicleService.updateDeployment(vehicleData.currentDeployment.id, updatedDeployment);
-          
-          // Generate trip summary
-          const summary: TripSummaryType = {
-            vehicleNumber: selectedVehicle,
-            outDateTime: new Date(vehicleData.currentDeployment.outTimestamp!).toLocaleString(),
-            inDateTime: new Date(timestamp).toLocaleString(),
-            totalDuration: calculateDuration(vehicleData.currentDeployment.outTimestamp!, timestamp),
-            totalKms: updatedDeployment.totalKms!,
-            mismatches: formData.inData.checklistMismatches || [],
-            outSupervisor: vehicleData.currentDeployment.outData?.supervisorName || '',
-            inSupervisor: formData.inData.inSupervisorName,
-            purpose: vehicleData.currentDeployment.purpose,
+          const updateData = {
+            id: vehicleData.currentDeployment.id,
+            updates: updatedDeployment,
+            vehicleNumber: selectedVehicle
           };
           
-          setTripSummary(summary);
-          setCurrentStep('summary');
+          const success = await submitFormData('update', updateData);
           
-          toast({
-            title: "Success",
-            description: `Vehicle ${selectedVehicle} marked as IN`,
-          });
+          if (success) {
+            // Generate trip summary
+            const summary: TripSummaryType = {
+              vehicleNumber: selectedVehicle,
+              outDateTime: new Date(vehicleData.currentDeployment.outTimestamp!).toLocaleString(),
+              inDateTime: new Date(timestamp).toLocaleString(),
+              totalDuration: calculateDuration(vehicleData.currentDeployment.outTimestamp!, timestamp),
+              totalKms: updatedDeployment.totalKms!,
+              mismatches: formData.inData.checklistMismatches || [],
+              outSupervisor: vehicleData.currentDeployment.outData?.supervisorName || '',
+              inSupervisor: formData.inData.inSupervisorName,
+              purpose: vehicleData.currentDeployment.purpose,
+            };
+            
+            setTripSummary(summary);
+            setCurrentStep('summary');
+          }
         }
       }
     } catch (error) {

@@ -1,5 +1,6 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { useToast } from '../hooks/use-toast';
 
 interface User {
   email: string;
@@ -24,6 +25,7 @@ const mockUsers = [
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const { toast } = useToast();
 
   const login = async (email: string, password: string): Promise<boolean> => {
     // Simulate API call delay
@@ -34,16 +36,34 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (foundUser && (foundUser.role === 'admin' || foundUser.role === 'supervisor')) {
       setUser({ email: foundUser.email, role: foundUser.role });
       console.log('Login successful:', foundUser.email, foundUser.role);
+      
+      toast({
+        title: "Welcome back!",
+        description: `Successfully logged in as ${foundUser.role}`,
+      });
+      
       return true;
     }
     
     console.log('Login failed: Invalid credentials or insufficient permissions');
+    
+    toast({
+      title: "Login Failed",
+      description: "Incorrect credentials or insufficient permissions. Please try again.",
+      variant: "destructive",
+    });
+    
     return false;
   };
 
   const logout = () => {
     setUser(null);
     console.log('User logged out');
+    
+    toast({
+      title: "👋 Logged Out",
+      description: "You have been successfully logged out.",
+    });
   };
 
   const isAuthenticated = user !== null;
