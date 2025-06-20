@@ -5,6 +5,9 @@ import { PurposeSelector } from '../components/PurposeSelector';
 import { OfficeForm } from '../components/OfficeForm';
 import { PilotForm } from '../components/PilotForm';
 import { TripSummary } from '../components/TripSummary';
+import { RecentVehicleActivities } from '../components/RecentVehicleActivities';
+import { LiveDeploymentStatus } from '../components/LiveDeploymentStatus';
+import { AlertsWarnings } from '../components/AlertsWarnings';
 import { vehicleService } from '../services/database';
 import { Vehicle, Deployment, TripSummary as TripSummaryType } from '../types/vehicle';
 import { calculateDuration } from '../utils/reportGenerator';
@@ -175,7 +178,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-6 max-w-4xl">
+      <div className="container mx-auto px-4 py-6 max-w-7xl">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             🚗 Vehicle Deployment Tracker
@@ -196,7 +199,10 @@ const Index = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-lg p-6">
+        {/* Start Deployment Section */}
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">Start Deployment</h2>
+          
           {currentStep === 'scanner' && (
             <VehicleScanner onVehicleDetected={handleVehicleDetected} />
           )}
@@ -235,6 +241,18 @@ const Index = () => {
           {currentStep === 'summary' && tripSummary && (
             <TripSummary summary={tripSummary} onClose={resetApp} />
           )}
+        </div>
+
+        {/* Dashboard Components */}
+        <div className="space-y-6">
+          {/* Two-column grid for Recent Activities and Live Status */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <RecentVehicleActivities />
+            <LiveDeploymentStatus />
+          </div>
+          
+          {/* Full-width Alerts & Warnings */}
+          <AlertsWarnings />
         </div>
 
         <div className="mt-6 text-center text-sm text-gray-500">
