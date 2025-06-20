@@ -1,6 +1,6 @@
 
 import React, { useEffect } from 'react';
-import { AppHeader } from '../components/AppHeader';
+import { PageLayout } from '../components/PageLayout';
 import { VehicleDeploymentForm } from '../components/VehicleDeploymentForm';
 import { DashboardLayout } from '../components/DashboardLayout';
 import { AppFooter } from '../components/AppFooter';
@@ -12,14 +12,16 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-6 max-w-7xl">
-        <AppHeader />
+    <PageLayout 
+      title="🚗 Vehicle Deployment Tracker" 
+      subtitle="Track vehicle IN/OUT movements with comprehensive logging"
+    >
+      <div className="space-y-6">
         <VehicleDeploymentForm />
         <DashboardLayout />
         <AppFooter />
       </div>
-    </div>
+    </PageLayout>
   );
 };
 

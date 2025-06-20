@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { PageLayout } from '../components/PageLayout';
 import { Deployment } from '../types/vehicle';
 import { RideDetailModal } from '../components/RideDetailModal';
 import { ExportDialog } from '../components/ExportDialog';
@@ -37,17 +38,11 @@ const RideHistory = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-6 max-w-7xl">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            📋 Ride History & Export Report
-          </h1>
-          <p className="text-gray-600">
-            Search, view, and export historical vehicle deployment records
-          </p>
-        </div>
-
+    <PageLayout 
+      title="📋 Ride History & Export Report" 
+      subtitle="Search, view, and export historical vehicle deployment records"
+    >
+      <div className="space-y-6">
         <RideHistoryFilters
           filters={filters}
           onFilterChange={updateFilter}
@@ -82,7 +77,7 @@ const RideHistory = () => {
           />
         )}
       </div>
-    </div>
+    </PageLayout>
   );
 };
 
