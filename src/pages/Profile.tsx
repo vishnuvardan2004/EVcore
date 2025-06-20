@@ -1,89 +1,35 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { PageLayout } from '../components/PageLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { User, LogOut, Settings } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 const Profile = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(true); // Mock login state
-  const [loginForm, setLoginForm] = useState({ username: '', password: '' });
+  const { user, logout } = useAuth();
 
-  // Mock user data
+  if (!user) {
+    return null; // This shouldn't happen due to ProtectedRoute, but just in case
+  }
+
+  // Mock additional user data based on the authenticated user
   const userData = {
-    name: 'John Doe',
-    role: 'Supervisor',
-    email: 'john.doe@company.com',
+    name: user.role === 'admin' ? 'John Doe' : 'Jane Smith',
+    role: user.role,
+    email: user.email,
     hub: 'Main Office',
-    employeeId: 'EMP001',
-    permissions: ['Vehicle Deployment', 'Report Generation', 'Alert Management']
-  };
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Login attempt:', loginForm);
-    setIsLoggedIn(true);
+    employeeId: user.role === 'admin' ? 'EMP001' : 'SUP002',
+    permissions: user.role === 'admin' 
+      ? ['Vehicle Deployment', 'Report Generation', 'Alert Management', 'User Management', 'System Configuration']
+      : ['Vehicle Deployment', 'Report Generation', 'Alert Management']
   };
 
   const handleLogout = () => {
-    setIsLoggedIn(false);
-    setLoginForm({ username: '', password: '' });
+    logout();
   };
-
-  if (!isLoggedIn) {
-    return (
-      <PageLayout 
-        title="👤 Login" 
-        subtitle="Access your account to manage vehicle deployments"
-      >
-        <div className="max-w-md mx-auto">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="w-5 h-5" />
-                Sign In
-              </CardTitle>
-              <CardDescription>
-                Enter your credentials to access the system
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="username">Username</Label>
-                  <Input
-                    id="username"
-                    type="text"
-                    value={loginForm.username}
-                    onChange={(e) => setLoginForm({ ...loginForm, username: e.target.value })}
-                    placeholder="Enter your username"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={loginForm.password}
-                    onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
-                    placeholder="Enter your password"
-                    required
-                  />
-                </div>
-                <Button type="submit" className="w-full">
-                  Sign In
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
-      </PageLayout>
-    );
-  }
 
   return (
     <PageLayout 
@@ -121,7 +67,7 @@ const Profile = () => {
             <div>
               <Label className="text-sm font-medium text-gray-600">Role</Label>
               <div className="mt-2">
-                <Badge variant="secondary" className="text-sm px-3 py-1">
+                <Badge variant="secondary" className="text-sm px-3 py-1 capitalize">
                   {userData.role}
                 </Badge>
               </div>
