@@ -8,7 +8,8 @@ import {
   Users, 
   AlertTriangle, 
   User, 
-  Settings 
+  Settings,
+  Car
 } from 'lucide-react';
 import {
   Sidebar,
@@ -23,10 +24,16 @@ import {
 
 const menuItems = [
   {
-    title: "Home",
+    title: "EVCORE Dashboard",
     url: "/",
     icon: Home,
-    description: "Quick actions and dashboard"
+    description: "Main platform dashboard"
+  },
+  {
+    title: "Vehicle Tracker",
+    url: "/vehicle-tracker",
+    icon: Car,
+    description: "Vehicle deployment tracking"
   },
   {
     title: "Ride History",
@@ -81,7 +88,7 @@ export const NavigationSidebar: React.FC = () => {
         <SidebarGroup>
           <div className="px-4 py-3 border-b border-sidebar-border">
             <h2 className="text-lg font-semibold text-sidebar-foreground">
-              🚗 Vehicle Tracker
+              🌐 EVCORE Platform
             </h2>
           </div>
           <SidebarGroupContent className="pt-4">
