@@ -1,47 +1,64 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { PageLayout } from '../components/PageLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AirportBookingForm } from '../components/AirportBookingForm';
+import { RentalPackageForm } from '../components/RentalPackageForm';
+import { SubscriptionBookingForm } from '../components/SubscriptionBookingForm';
+import { BookingsView } from '../components/BookingsView';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { Eye, Plus } from 'lucide-react';
 
 const OfflineBookings = () => {
-  const navigate = useNavigate();
+  const [showBookings, setShowBookings] = useState(false);
 
   return (
     <PageLayout 
       title="📝 Offline Bookings" 
       subtitle="Record manual/offline ride bookings"
     >
-      <div className="max-w-4xl mx-auto">
-        <Card>
-          <CardHeader className="text-center">
-            <div className="text-6xl mb-4">📝</div>
-            <CardTitle className="text-2xl">Offline Bookings</CardTitle>
-            <CardDescription>
-              Manual booking system for offline and phone-based ride reservations
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-center space-y-4">
-            <p className="text-gray-600">
-              Features coming soon:
-            </p>
-            <ul className="text-left text-gray-600 space-y-2 max-w-md mx-auto">
-              <li>• Manual booking forms</li>
-              <li>• Customer information capture</li>
-              <li>• Ride scheduling</li>
-              <li>• Payment tracking</li>
-              <li>• Booking confirmations</li>
-            </ul>
-            <div className="pt-6">
-              <Button onClick={() => navigate('/')} className="gap-2">
-                <ArrowLeft className="w-4 h-4" />
-                Back to Dashboard
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="max-w-6xl mx-auto space-y-6">
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-bold text-gray-900">Booking Management</h2>
+          <Button 
+            onClick={() => setShowBookings(!showBookings)}
+            variant="outline"
+            className="gap-2"
+          >
+            {showBookings ? <Plus className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            {showBookings ? 'Create New Booking' : 'View All Bookings'}
+          </Button>
+        </div>
+
+        {showBookings ? (
+          <BookingsView />
+        ) : (
+          <Tabs defaultValue="airport" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="airport" className="gap-2">
+                ✈️ Airport Bookings
+              </TabsTrigger>
+              <TabsTrigger value="rental" className="gap-2">
+                🚕 Rental Package
+              </TabsTrigger>
+              <TabsTrigger value="subscription" className="gap-2">
+                📝 Subscription
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="airport" className="mt-6">
+              <AirportBookingForm />
+            </TabsContent>
+
+            <TabsContent value="rental" className="mt-6">
+              <RentalPackageForm />
+            </TabsContent>
+
+            <TabsContent value="subscription" className="mt-6">
+              <SubscriptionBookingForm />
+            </TabsContent>
+          </Tabs>
+        )}
       </div>
     </PageLayout>
   );
