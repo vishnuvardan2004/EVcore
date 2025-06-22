@@ -61,7 +61,7 @@ const subPlatforms: SubPlatform[] = [
     icon: '📝',
     description: 'Record manual/offline ride bookings',
     route: '/offline-bookings',
-    isActive: false
+    isActive: true
   },
   {
     id: 'charging-tracker',
