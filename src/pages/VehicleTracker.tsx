@@ -1,6 +1,6 @@
 
 import React, { useEffect } from 'react';
-import { PageLayout } from '../components/PageLayout';
+import { VehicleTrackerLayout } from '../components/VehicleTrackerLayout';
 import { VehicleDeploymentForm } from '../components/VehicleDeploymentForm';
 import { DashboardLayout } from '../components/DashboardLayout';
 import { AppFooter } from '../components/AppFooter';
@@ -12,7 +12,7 @@ const VehicleTracker = () => {
   }, []);
 
   return (
-    <PageLayout 
+    <VehicleTrackerLayout 
       title="🚗 Vehicle Deployment Tracker" 
       subtitle="Track vehicle IN/OUT movements with comprehensive logging"
     >
@@ -21,7 +21,7 @@ const VehicleTracker = () => {
         <DashboardLayout />
         <AppFooter />
       </div>
-    </PageLayout>
+    </VehicleTrackerLayout>
   );
 };
 

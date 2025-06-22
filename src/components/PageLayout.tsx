@@ -1,7 +1,5 @@
 
 import React from 'react';
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import { NavigationSidebar } from './NavigationSidebar';
 
 interface PageLayoutProps {
   children: React.ReactNode;
@@ -15,26 +13,29 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
   subtitle 
 }) => {
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gray-50">
-        <NavigationSidebar />
-        <main className="flex-1 flex flex-col">
-          <div className="flex items-center gap-4 p-4 bg-white border-b border-gray-200">
-            <SidebarTrigger className="h-8 w-8" />
-            {title && (
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
-                {subtitle && (
-                  <p className="text-gray-600 text-sm">{subtitle}</p>
-                )}
-              </div>
-            )}
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center gap-4">
+              {title && (
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+                  {subtitle && (
+                    <p className="text-gray-600 text-sm">{subtitle}</p>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
-          <div className="flex-1 p-6">
-            {children}
-          </div>
-        </main>
-      </div>
-    </SidebarProvider>
+        </div>
+      </header>
+      
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {children}
+      </main>
+    </div>
   );
 };
