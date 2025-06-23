@@ -69,7 +69,7 @@ const subPlatforms: SubPlatform[] = [
     icon: '⚡',
     description: 'Monitor charging status of vehicles',
     route: '/charging-tracker',
-    isActive: false
+    isActive: true
   }
 ];
 
