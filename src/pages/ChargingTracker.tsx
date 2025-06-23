@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { PageLayout } from '../components/PageLayout';
+import { ChargingTrackerLayout } from '../components/ChargingTrackerLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -464,7 +463,7 @@ const ChargingTracker = () => {
   );
 
   return (
-    <PageLayout 
+    <ChargingTrackerLayout 
       title="⚡ Vehicle Charging Tracker" 
       subtitle="Monitor and track EV charging sessions"
     >
@@ -480,7 +479,7 @@ const ChargingTracker = () => {
         {currentFlow === 'start' && renderStartForm()}
         {currentFlow === 'end' && renderEndForm()}
       </div>
-    </PageLayout>
+    </ChargingTrackerLayout>
   );
 };
 
