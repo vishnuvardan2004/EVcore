@@ -19,6 +19,58 @@ export const ActiveShiftSection: React.FC = () => {
 
   const totalEarnings = state.trips.reduce((total, trip) => total + trip.amount + trip.tip, 0);
 
+  const calculatePaymentTotals = () => {
+    const totals = {
+      totalCash: 0,
+      totalQR: 0,
+      totalUberRapido: 0,
+      totalWallet: 0,
+      totalCard: 0,
+    };
+
+    state.trips.forEach(trip => {
+      const tripTotal = trip.amount + trip.tip;
+      
+      if (trip.partPayment?.enabled) {
+        // Handle part payments
+        const amount1Mode = trip.partPayment.amount1Mode;
+        const amount2Mode = trip.partPayment.amount2Mode;
+        
+        if (amount1Mode === 'Cash') totals.totalCash += trip.partPayment.amount1;
+        else if (amount1Mode === 'UPI - QR') totals.totalQR += trip.partPayment.amount1;
+        
+        if (amount2Mode === 'Cash') totals.totalCash += trip.partPayment.amount2;
+        else if (amount2Mode === 'UPI - QR') totals.totalQR += trip.partPayment.amount2;
+      } else {
+        // Handle single payment mode
+        switch (trip.paymentMode) {
+          case 'Cash':
+            totals.totalCash += tripTotal;
+            break;
+          case 'UPI - QR':
+            totals.totalQR += tripTotal;
+            break;
+          case 'Uber':
+            totals.totalUberRapido += tripTotal;
+            break;
+          case 'Wallet':
+            totals.totalWallet += tripTotal;
+            break;
+          case 'Card':
+            totals.totalCard += tripTotal;
+            break;
+        }
+      }
+    });
+
+    return totals;
+  };
+
+  const handleConfirmEndShift = () => {
+    const paymentTotals = calculatePaymentTotals();
+    endShift(paymentTotals);
+  };
+
   return (
     <div className="space-y-6">
       {/* Shift Summary Card */}
@@ -107,7 +159,7 @@ export const ActiveShiftSection: React.FC = () => {
                   </div>
                 </div>
                 <Button 
-                  onClick={() => endShift({})}
+                  onClick={handleConfirmEndShift}
                   className="w-full"
                   size="lg"
                 >
