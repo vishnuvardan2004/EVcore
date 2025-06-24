@@ -7,6 +7,7 @@ import ChargingTracker from './pages/ChargingTracker';
 import ChargingHistory from './pages/ChargingHistory';
 import ChargingSummary from './pages/ChargingSummary';
 import DriverInduction from './pages/DriverInduction';
+import TripDetails from './pages/TripDetails';
 import { AuthProvider } from './contexts/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Toaster } from '@/components/ui/toaster';
@@ -21,6 +22,7 @@ function App() {
           <Route path="/charging-tracker" element={<ChargingTracker />} />
           <Route path="/charging-history" element={<ChargingHistory />} />
           <Route path="/charging-summary" element={<ChargingSummary />} />
+          <Route path="/trip-details" element={<TripDetails />} />
           <Route 
             path="/driver-induction" 
             element={
