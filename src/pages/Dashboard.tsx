@@ -53,7 +53,7 @@ const subPlatforms: SubPlatform[] = [
     icon: '🚘',
     description: 'View and log trip records for each driver',
     route: '/trip-details',
-    isActive: false
+    isActive: true
   },
   {
     id: 'offline-bookings',
