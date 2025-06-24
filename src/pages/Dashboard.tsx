@@ -45,7 +45,7 @@ const subPlatforms: SubPlatform[] = [
     icon: '📋',
     description: 'Enter and manage full driver profiles',
     route: '/driver-induction',
-    isActive: false
+    isActive: true
   },
   {
     id: 'trip-details',
