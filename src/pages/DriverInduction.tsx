@@ -5,14 +5,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, CheckCircle } from 'lucide-react';
-import { PersonalInformationSection } from '../components/induction/PersonalInformationSection';
-import { DrivingInformationSection } from '../components/induction/DrivingInformationSection';
-import { IdentityDocumentsSection } from '../components/induction/IdentityDocumentsSection';
-import { BankingDetailsSection } from '../components/induction/BankingDetailsSection';
-import { AddressDetailsSection } from '../components/induction/AddressDetailsSection';
-import { PVCInformationSection } from '../components/induction/PVCInformationSection';
-import { FamilyEmergencySection } from '../components/induction/FamilyEmergencySection';
-import { MedicalInductionSection } from '../components/induction/MedicalInductionSection';
+import { PersonalInformationSection } from '../features/driverInduction/components/PersonalInformationSection';
+import { DrivingInformationSection } from '../features/driverInduction/components/DrivingInformationSection';
+import { IdentityDocumentsSection } from '../features/driverInduction/components/IdentityDocumentsSection';
+import { BankingDetailsSection } from '../features/driverInduction/components/BankingDetailsSection';
+import { AddressDetailsSection } from '../features/driverInduction/components/AddressDetailsSection';
+import { PVCInformationSection } from '../features/driverInduction/components/PVCInformationSection';
+import { FamilyEmergencySection } from '../features/driverInduction/components/FamilyEmergencySection';
+import { MedicalInductionSection } from '../features/driverInduction/components/MedicalInductionSection';
 import { useToast } from '../hooks/use-toast';
 
 export interface DriverInductionData {

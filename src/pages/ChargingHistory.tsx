@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { ChargingTrackerLayout } from '../components/ChargingTrackerLayout';
+import { ChargingTrackerLayout } from '../features/vehicleChargingTracker/components/ChargingTrackerLayout';
 import { PageLayout } from '../components/PageLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
