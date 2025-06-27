@@ -27,7 +27,7 @@ import { Button } from '@/components/ui/button';
 
 const menuItems = [
   {
-    title: "Home",
+    title: "🏠 Home",
     url: "/",
     icon: Home,
     description: "EVCORE Dashboard"
@@ -133,7 +133,7 @@ export const NavigationSidebar: React.FC = () => {
             className="w-full justify-start gap-3 text-red-600 hover:text-red-700 hover:bg-red-50"
           >
             <LogOut className="w-5 h-5" />
-            <span>Logout</span>
+            <span>🔽 Logout</span>
           </Button>
         </div>
       </SidebarFooter>
