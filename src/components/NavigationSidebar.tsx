@@ -3,13 +3,12 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   Home, 
-  FileText, 
   BarChart, 
-  Users, 
-  AlertTriangle, 
-  User, 
+  FileText, 
   Settings,
-  Car
+  Globe,
+  FileCheck,
+  LogOut
 } from 'lucide-react';
 import {
   Sidebar,
@@ -19,79 +18,85 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  useSidebar
+  useSidebar,
+  SidebarHeader,
+  SidebarFooter
 } from '@/components/ui/sidebar';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
 
 const menuItems = [
   {
-    title: "EVCORE Dashboard",
+    title: "Home",
     url: "/",
     icon: Home,
-    description: "Main platform dashboard"
+    description: "EVCORE Dashboard"
   },
   {
-    title: "Vehicle Tracker",
-    url: "/vehicle-tracker",
-    icon: Car,
-    description: "Vehicle deployment tracking"
-  },
-  {
-    title: "Ride History",
-    url: "/history",
-    icon: FileText,
-    description: "Full searchable IN/OUT log"
-  },
-  {
-    title: "Reports",
-    url: "/reports",
+    title: "Smart Widgets Dashboard",
+    url: "/smart-widgets",
     icon: BarChart,
-    description: "Trip summaries and exports"
+    description: "Real-time metrics and widgets"
   },
   {
-    title: "Live Deployment",
-    url: "/live-status",
-    icon: Users,
-    description: "Currently deployed vehicles"
+    title: "Global Reports",
+    url: "/global-reports",
+    icon: FileText,
+    description: "Export and view platform reports"
   },
   {
-    title: "Alerts & Mismatches",
-    url: "/alerts",
-    icon: AlertTriangle,
-    description: "Checklist issues and alerts"
-  },
-  {
-    title: "Profile",
-    url: "/profile",
-    icon: User,
-    description: "User profile and login"
-  },
-  {
-    title: "Settings",
-    url: "/settings",
+    title: "Admin Module Toggle",
+    url: "/admin-toggle",
     icon: Settings,
-    description: "Admin controls and configuration"
+    description: "Enable/disable platform modules"
+  },
+  {
+    title: "Language Selector",
+    url: "/language",
+    icon: Globe,
+    description: "Choose your language"
+  },
+  {
+    title: "Audit Logs",
+    url: "/audit-logs",
+    icon: FileCheck,
+    description: "View system activity logs"
   }
 ];
 
 export const NavigationSidebar: React.FC = () => {
   const location = useLocation();
   const { setOpenMobile } = useSidebar();
+  const { user, logout } = useAuth();
 
   const handleLinkClick = () => {
     // Auto-collapse sidebar on mobile after link click
     setOpenMobile(false);
   };
 
+  const handleLogout = () => {
+    logout();
+    setOpenMobile(false);
+  };
+
   return (
-    <Sidebar>
+    <Sidebar className="border-r">
+      <SidebarHeader>
+        <div className="px-4 py-3">
+          <h2 className="text-lg font-semibold text-sidebar-foreground">
+            🌐 EVCORE Platform
+          </h2>
+          {user && (
+            <p className="text-sm text-sidebar-foreground/70 mt-1">
+              Logged in as: {user.role === 'admin' ? 'Admin' : 'Supervisor'}
+            </p>
+          )}
+        </div>
+      </SidebarHeader>
+      
       <SidebarContent>
         <SidebarGroup>
-          <div className="px-4 py-3 border-b border-sidebar-border">
-            <h2 className="text-lg font-semibold text-sidebar-foreground">
-              🌐 EVCORE Platform
-            </h2>
-          </div>
-          <SidebarGroupContent className="pt-4">
+          <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
@@ -119,6 +124,19 @@ export const NavigationSidebar: React.FC = () => {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      <SidebarFooter>
+        <div className="p-4 border-t border-sidebar-border">
+          <Button 
+            onClick={handleLogout}
+            variant="ghost"
+            className="w-full justify-start gap-3 text-red-600 hover:text-red-700 hover:bg-red-50"
+          >
+            <LogOut className="w-5 h-5" />
+            <span>Logout</span>
+          </Button>
+        </div>
+      </SidebarFooter>
     </Sidebar>
   );
 };

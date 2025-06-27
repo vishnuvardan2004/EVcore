@@ -2,8 +2,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Menu } from 'lucide-react';
 
 interface SubPlatform {
   id: string;
@@ -84,22 +82,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon">
-                <Menu className="h-6 w-6" />
-              </Button>
-              <h1 className="text-2xl font-bold text-gray-900">Welcome to EVCORE</h1>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-2">EVCORE Dashboard</h2>
           <p className="text-gray-600">Select a platform to get started with your operations</p>
@@ -145,7 +128,7 @@ const Dashboard = () => {
             EVCORE Platform - Streamlining Operations Management
           </p>
         </div>
-      </main>
+      </div>
     </div>
   );
 };
