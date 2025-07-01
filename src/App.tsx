@@ -2,7 +2,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
-import { VehicleTracker } from './features/vehicleDeployment';
+import VehicleTracker from './pages/VehicleTracker';
 import { ChargingTracker, ChargingHistory, ChargingSummary } from './features/vehicleChargingTracker';
 import { DriverInduction } from './features/driverInduction';
 import { TripDetails } from './features/driverTripDetails';
