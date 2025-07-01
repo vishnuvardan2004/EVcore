@@ -27,40 +27,40 @@ import { Button } from '@/components/ui/button';
 
 const menuItems = [
   {
-    title: "🏠 Home",
+    title: "Dashboard",
     url: "/",
     icon: Home,
-    description: "EVCORE Dashboard"
+    description: "EVCORE Home"
   },
   {
-    title: "Smart Widgets Dashboard",
+    title: "Smart Widgets",
     url: "/smart-widgets",
     icon: BarChart,
-    description: "Real-time metrics and widgets"
+    description: "Real-time metrics"
   },
   {
     title: "Global Reports",
     url: "/global-reports",
     icon: FileText,
-    description: "Export and view platform reports"
+    description: "Platform reports"
   },
   {
-    title: "Admin Module Toggle",
+    title: "Admin Settings",
     url: "/admin-toggle",
     icon: Settings,
-    description: "Enable/disable platform modules"
+    description: "Module management"
   },
   {
-    title: "Language Selector",
+    title: "Language",
     url: "/language",
     icon: Globe,
-    description: "Choose your language"
+    description: "Language settings"
   },
   {
     title: "Audit Logs",
     url: "/audit-logs",
     icon: FileCheck,
-    description: "View system activity logs"
+    description: "System activity"
   }
 ];
 
@@ -70,7 +70,6 @@ export const NavigationSidebar: React.FC = () => {
   const { user, logout } = useAuth();
 
   const handleLinkClick = () => {
-    // Auto-collapse sidebar on mobile after link click
     setOpenMobile(false);
   };
 
@@ -80,16 +79,31 @@ export const NavigationSidebar: React.FC = () => {
   };
 
   return (
-    <Sidebar className="border-r">
+    <Sidebar className="border-r border-sidebar-border bg-sidebar">
       <SidebarHeader>
-        <div className="px-4 py-3">
-          <h2 className="text-lg font-semibold text-sidebar-foreground">
-            🌐 EVCORE Platform
-          </h2>
+        <div className="px-4 py-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-sidebar-accent rounded-xl flex items-center justify-center">
+              <span className="text-xl font-bold text-sidebar-accent-foreground">E</span>
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-sidebar-foreground">
+                EVZIP
+              </h2>
+              <p className="text-sm text-sidebar-foreground/70">
+                EVCORE Platform
+              </p>
+            </div>
+          </div>
           {user && (
-            <p className="text-sm text-sidebar-foreground/70 mt-1">
-              Logged in as: {user.role === 'admin' ? 'Admin' : 'Supervisor'}
-            </p>
+            <div className="bg-sidebar-accent/10 rounded-lg p-3">
+              <p className="text-sm font-medium text-sidebar-foreground">
+                {user.role === 'admin' ? 'Administrator' : 'Supervisor'}
+              </p>
+              <p className="text-xs text-sidebar-foreground/60">
+                Access Level: {user.role}
+              </p>
+            </div>
           )}
         </div>
       </SidebarHeader>
@@ -103,16 +117,17 @@ export const NavigationSidebar: React.FC = () => {
                   <SidebarMenuButton 
                     asChild
                     isActive={location.pathname === item.url}
+                    className="mx-2"
                   >
                     <Link 
                       to={item.url}
                       onClick={handleLinkClick}
-                      className="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors"
+                      className={`evzip-sidebar-item ${location.pathname === item.url ? 'active' : ''}`}
                     >
                       <item.icon className="w-5 h-5" />
                       <div className="flex flex-col">
                         <span className="font-medium">{item.title}</span>
-                        <span className="text-xs text-sidebar-foreground/70">
+                        <span className="text-xs opacity-70">
                           {item.description}
                         </span>
                       </div>
@@ -126,14 +141,14 @@ export const NavigationSidebar: React.FC = () => {
       </SidebarContent>
 
       <SidebarFooter>
-        <div className="p-4 border-t border-sidebar-border">
+        <div className="p-4">
           <Button 
             onClick={handleLogout}
             variant="ghost"
-            className="w-full justify-start gap-3 text-red-600 hover:text-red-700 hover:bg-red-50"
+            className="w-full justify-start gap-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg"
           >
             <LogOut className="w-5 h-5" />
-            <span>🔽 Logout</span>
+            <span className="font-medium">Sign Out</span>
           </Button>
         </div>
       </SidebarFooter>

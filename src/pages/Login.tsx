@@ -39,23 +39,29 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* App Title/Logo */}
+        {/* EVZIP Brand Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            🚗 Vehicle Deployment Tracker
-          </h1>
-          <p className="text-gray-600">
-            Secure access for authorized personnel only
+          <div className="flex items-center justify-center gap-4 mb-6">
+            <div className="w-16 h-16 bg-accent rounded-2xl flex items-center justify-center shadow-lg">
+              <span className="text-2xl font-bold text-accent-foreground">E</span>
+            </div>
+            <div className="text-left">
+              <h1 className="text-3xl font-bold text-foreground">EVZIP</h1>
+              <p className="text-muted-foreground font-medium">EVCORE Platform</p>
+            </div>
+          </div>
+          <p className="text-muted-foreground">
+            Secure access for authorized personnel
           </p>
         </div>
 
         {/* Login Form */}
-        <Card>
+        <Card className="evzip-card">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="w-5 h-5" />
+            <CardTitle className="flex items-center gap-2 text-foreground">
+              <User className="w-5 h-5 text-accent" />
               Sign In
             </CardTitle>
             <CardDescription>
@@ -63,10 +69,10 @@ const Login = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-6">
               {/* Error Message Area */}
               {error && (
-                <Alert variant="destructive">
+                <Alert variant="destructive" className="border-red-200 bg-red-50">
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
@@ -74,22 +80,23 @@ const Login = () => {
 
               {/* Email Input */}
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="text-foreground font-semibold">Email</Label>
                 <Input
                   id="email"
                   name="email"
                   type="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  placeholder="Enter your email"
+                  placeholder="Enter your email address"
                   required
                   disabled={isLoading}
+                  className="rounded-xl border-input focus:border-accent focus:ring-accent"
                 />
               </div>
 
               {/* Password Input */}
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password" className="text-foreground font-semibold">Password</Label>
                 <Input
                   id="password"
                   name="password"
@@ -99,29 +106,43 @@ const Login = () => {
                   placeholder="Enter your password"
                   required
                   disabled={isLoading}
+                  className="rounded-xl border-input focus:border-accent focus:ring-accent"
                 />
               </div>
 
               {/* Login Button */}
               <Button 
                 type="submit" 
-                className="w-full" 
+                className="evzip-button w-full text-base py-3" 
                 disabled={isLoading}
               >
-                {isLoading ? 'Signing in...' : 'Sign In'}
+                {isLoading ? 'Signing in...' : 'Sign In to EVCORE'}
               </Button>
             </form>
 
             {/* Demo Credentials */}
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-              <p className="text-sm font-medium text-gray-700 mb-2">Demo Credentials:</p>
-              <div className="text-xs text-gray-600 space-y-1">
-                <p><strong>Admin:</strong> admin@example.com / admin123</p>
-                <p><strong>Supervisor:</strong> supervisor@example.com / super123</p>
+            <div className="mt-6 p-4 bg-muted/30 rounded-xl border border-border/50">
+              <p className="text-sm font-semibold text-foreground mb-3">Demo Credentials:</p>
+              <div className="text-sm text-muted-foreground space-y-2">
+                <div className="flex justify-between">
+                  <span className="font-medium">Admin:</span>
+                  <span>admin@example.com / admin123</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">Supervisor:</span>
+                  <span>supervisor@example.com / super123</span>
+                </div>
               </div>
             </div>
           </CardContent>
         </Card>
+
+        {/* Footer */}
+        <div className="mt-6 text-center">
+          <p className="text-sm text-muted-foreground">
+            EVZIP EVCORE Platform • Sustainable Transportation Management
+          </p>
+        </div>
       </div>
     </div>
   );

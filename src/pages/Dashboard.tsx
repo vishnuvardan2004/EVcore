@@ -2,6 +2,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 interface SubPlatform {
   id: string;
@@ -81,41 +82,54 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">EVCORE Dashboard</h2>
-          <p className="text-gray-600">Select a platform to get started with your operations</p>
+    <div className="min-h-screen bg-background">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Hero Section */}
+        <div className="text-center mb-12">
+          <div className="flex items-center justify-center gap-4 mb-6">
+            <div className="w-16 h-16 bg-accent rounded-2xl flex items-center justify-center shadow-lg">
+              <span className="text-2xl font-bold text-accent-foreground">E</span>
+            </div>
+            <div className="text-left">
+              <h1 className="text-4xl font-bold text-foreground">EVZIP</h1>
+              <p className="text-lg text-muted-foreground font-medium">EVCORE Platform</p>
+            </div>
+          </div>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            Streamline your electric vehicle operations with our comprehensive management platform
+          </p>
         </div>
 
         {/* Platform Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {subPlatforms.map((platform) => (
             <Card 
               key={platform.id}
-              className={`transition-all duration-200 hover:shadow-lg hover:scale-105 cursor-pointer ${
+              className={`evzip-card transition-all duration-300 hover:scale-105 cursor-pointer border-2 ${
                 platform.isActive 
-                  ? 'hover:border-blue-500 bg-white' 
-                  : 'bg-gray-50 opacity-75 cursor-not-allowed'
+                  ? 'hover:border-accent bg-card shadow-lg' 
+                  : 'bg-muted/30 opacity-75 cursor-not-allowed hover:scale-100'
               }`}
               onClick={() => handleCardClick(platform)}
             >
               <CardHeader className="text-center pb-4">
-                <div className="text-4xl mb-2">{platform.icon}</div>
-                <CardTitle className={`text-lg ${platform.isActive ? 'text-gray-900' : 'text-gray-500'}`}>
+                <div className="text-5xl mb-4">{platform.icon}</div>
+                <CardTitle className={`text-xl ${platform.isActive ? 'text-foreground' : 'text-muted-foreground'}`}>
                   {platform.title}
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-center">
-                <CardDescription className={`${platform.isActive ? 'text-gray-600' : 'text-gray-400'}`}>
+                <CardDescription className={`text-base mb-4 ${platform.isActive ? 'text-muted-foreground' : 'text-muted-foreground/70'}`}>
                   {platform.description}
                 </CardDescription>
-                {!platform.isActive && (
-                  <div className="mt-3">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                      Coming Soon
-                    </span>
-                  </div>
+                {platform.isActive ? (
+                  <Badge variant="secondary" className="bg-accent/10 text-accent border-accent/20 font-semibold">
+                    Active
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="bg-yellow-50 text-yellow-600 border-yellow-200 font-semibold">
+                    Coming Soon
+                  </Badge>
                 )}
               </CardContent>
             </Card>
@@ -123,10 +137,18 @@ const Dashboard = () => {
         </div>
 
         {/* Footer Info */}
-        <div className="mt-12 text-center">
-          <p className="text-gray-500 text-sm">
-            EVCORE Platform - Streamlining Operations Management
-          </p>
+        <div className="mt-16 text-center">
+          <div className="bg-card rounded-2xl p-8 shadow-sm border border-border/50">
+            <h3 className="text-lg font-bold text-foreground mb-2">EVZIP EVCORE Platform</h3>
+            <p className="text-muted-foreground">
+              Powering sustainable transportation through intelligent fleet management
+            </p>
+            <div className="flex justify-center gap-4 mt-4 text-sm text-muted-foreground">
+              <span>• Real-time Tracking</span>
+              <span>• Automated Reporting</span>
+              <span>• Offline-ready</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
