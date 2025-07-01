@@ -2,10 +2,10 @@
 import React, { useState } from 'react';
 import { PageLayout } from '../../../shared/components/PageLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../shared/components/ui/tabs';
-import { AirportBookingForm } from '../../../shared/components/AirportBookingForm';
-import { RentalPackageForm } from '../../../shared/components/RentalPackageForm';
-import { SubscriptionBookingForm } from '../../../shared/components/SubscriptionBookingForm';
-import { BookingsView } from '../../../shared/components/BookingsView';
+import { AirportBookingForm } from '../../../components/AirportBookingForm';
+import { RentalPackageForm } from '../../../components/RentalPackageForm';
+import { SubscriptionBookingForm } from '../../../components/SubscriptionBookingForm';
+import { BookingsView } from '../../../components/BookingsView';
 import { Button } from '../../../shared/components/ui/button';
 import { Eye, Plus } from 'lucide-react';
 
