@@ -5,26 +5,35 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Form } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Plane } from 'lucide-react';
 import { CustomerInformationSection } from './forms/CustomerInformationSection';
-import { PickupDetailsSection } from './forms/PickupDetailsSection';
-import { DropDetailsSection } from './forms/DropDetailsSection';
 
 const airportBookingSchema = z.object({
   customerName: z.string().min(2, 'Customer name must be at least 2 characters'),
   customerPhone: z.string().regex(/^\d{10}$/, 'Phone number must be 10 digits'),
-  pickupDateTime: z.string().min(1, 'Pickup date and time is required'),
-  pickupPilot: z.string().min(1, 'Pickup pilot is required'),
-  pickupVehicle: z.string().min(1, 'Pickup vehicle is required'),
-  pickupCost: z.string().min(1, 'Pickup cost is required'),
-  pickupPaymentMode: z.enum(['UPI', 'Cash']),
-  dropDateTime: z.string().min(1, 'Drop date and time is required'),
-  dropPilot: z.string().min(1, 'Drop pilot is required'),
-  dropVehicle: z.string().min(1, 'Drop vehicle is required'),
-  dropCost: z.string().min(1, 'Drop cost is required'),
-  dropPaymentMode: z.enum(['UPI', 'Cash']),
+  bookingType: z.enum(['pickup', 'drop']),
+  date: z.string().min(1, 'Date is required'),
+  time: z.string().min(1, 'Time is required'),
+  pilotName: z.string().min(1, 'Pilot is required'),
+  vehicleNumber: z.string().min(1, 'Vehicle is required'),
+  cost: z.string().min(1, 'Cost is required'),
+  paymentMode: z.enum(['Cash', 'UPI', 'Part Payment']),
+  partPaymentCash: z.string().optional(),
+  partPaymentUPI: z.string().optional(),
+}).refine((data) => {
+  if (data.paymentMode === 'Part Payment') {
+    return data.partPaymentCash && data.partPaymentUPI;
+  }
+  return true;
+}, {
+  message: "Both cash and UPI amounts are required for part payment",
+  path: ["paymentMode"],
 });
 
 type AirportBookingFormData = z.infer<typeof airportBookingSchema>;
@@ -38,10 +47,11 @@ export const AirportBookingForm = () => {
   const form = useForm<AirportBookingFormData>({
     resolver: zodResolver(airportBookingSchema),
     defaultValues: {
-      pickupPaymentMode: 'UPI',
-      dropPaymentMode: 'UPI',
+      paymentMode: 'Cash',
     },
   });
+
+  const watchPaymentMode = form.watch('paymentMode');
 
   const onSubmit = (data: AirportBookingFormData) => {
     console.log('Airport booking submitted:', data);
@@ -72,7 +82,7 @@ export const AirportBookingForm = () => {
           <CardTitle className="text-xl">Create Airport Booking</CardTitle>
         </div>
         <CardDescription>
-          Record pickup and drop bookings for airport transfers
+          Record airport pickup and drop bookings
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -84,27 +94,193 @@ export const AirportBookingForm = () => {
               customerPhoneField="customerPhone"
             />
 
-            <PickupDetailsSection
-              control={form.control}
-              pickupDateTimeField="pickupDateTime"
-              pickupCostField="pickupCost"
-              pickupPilotField="pickupPilot"
-              pickupVehicleField="pickupVehicle"
-              pickupPaymentModeField="pickupPaymentMode"
-              pilots={pilots}
-              vehicles={vehicles}
-            />
+            <Card className="border-blue-200 bg-blue-50/30">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  ✈️ Airport Booking Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="bookingType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Booking Type</FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          className="flex gap-6"
+                        >
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="pickup" id="pickup" />
+                            <Label htmlFor="pickup">Pickup from Airport</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="drop" id="drop" />
+                            <Label htmlFor="drop">Drop at Airport</Label>
+                          </div>
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="date"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Date</FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="time"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Time</FormLabel>
+                        <FormControl>
+                          <Input type="time" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="pilotName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Pilot Name</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select pilot" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {pilots.map((pilot) => (
+                              <SelectItem key={pilot} value={pilot}>
+                                {pilot}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="vehicleNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Vehicle Number</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select vehicle" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {vehicles.map((vehicle) => (
+                              <SelectItem key={vehicle} value={vehicle}>
+                                {vehicle}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="cost"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Cost (₹)</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="Enter amount" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
-            <DropDetailsSection
-              control={form.control}
-              dropDateTimeField="dropDateTime"
-              dropCostField="dropCost"
-              dropPilotField="dropPilot"
-              dropVehicleField="dropVehicle"
-              dropPaymentModeField="dropPaymentMode"
-              pilots={pilots}
-              vehicles={vehicles}
-            />
+                <FormField
+                  control={form.control}
+                  name="paymentMode"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Payment Mode</FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          className="flex gap-6"
+                        >
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="Cash" id="airport-cash" />
+                            <Label htmlFor="airport-cash">Cash</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="UPI" id="airport-upi" />
+                            <Label htmlFor="airport-upi">UPI</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="Part Payment" id="airport-part" />
+                            <Label htmlFor="airport-part">Part Payment</Label>
+                          </div>
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {watchPaymentMode === 'Part Payment' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                    <FormField
+                      control={form.control}
+                      name="partPaymentCash"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Cash Amount (₹)</FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="Enter cash amount" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="partPaymentUPI"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>UPI Amount (₹)</FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="Enter UPI amount" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
             <div className="flex justify-end pt-4">
               <Button type="submit" size="lg" className="min-w-32">

@@ -10,12 +10,15 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Calendar } from 'lucide-react';
+import { CustomerInformationSection } from './forms/CustomerInformationSection';
 
 const subscriptionBookingSchema = z.object({
   customerName: z.string().min(2, 'Customer name must be at least 2 characters'),
   customerPhone: z.string().regex(/^\d{10}$/, 'Phone number must be 10 digits'),
-  pickupLocation: z.string().min(2, 'Pickup location must be at least 2 characters'),
   pickupTime: z.string().min(1, 'Pickup time is required'),
+  pickupLocation: z.string().min(2, 'Pickup location must be at least 2 characters'),
+  dropTime: z.string().min(1, 'Drop time is required'),
+  dropLocation: z.string().min(2, 'Drop location must be at least 2 characters'),
   pilotName: z.string().min(1, 'Pilot is required'),
   vehicleNumber: z.string().min(1, 'Vehicle is required'),
 });
@@ -67,52 +70,33 @@ export const SubscriptionBookingForm = () => {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Customer Information */}
-            <Card className="border-gray-200">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  👤 Customer Information
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="customerName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Customer Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter customer name" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="customerPhone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Phone Number</FormLabel>
-                      <FormControl>
-                        <Input placeholder="10-digit phone number" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </CardContent>
-            </Card>
+            <CustomerInformationSection
+              control={form.control}
+              customerNameField="customerName"
+              customerPhoneField="customerPhone"
+            />
 
-            {/* Subscription Details */}
             <Card className="border-purple-200 bg-purple-50/30">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
-                  📝 Subscription Details
+                  🔁 Subscription Details
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="pickupTime"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Pickup Time</FormLabel>
+                        <FormControl>
+                          <Input type="time" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   <FormField
                     control={form.control}
                     name="pickupLocation"
@@ -128,12 +112,25 @@ export const SubscriptionBookingForm = () => {
                   />
                   <FormField
                     control={form.control}
-                    name="pickupTime"
+                    name="dropTime"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Pickup Time</FormLabel>
+                        <FormLabel>Drop Time</FormLabel>
                         <FormControl>
                           <Input type="time" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="dropLocation"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Drop Location</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter drop address" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

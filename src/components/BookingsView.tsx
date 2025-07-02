@@ -88,26 +88,19 @@ export const BookingsView = () => {
       <CardContent>
         {booking.type === 'Airport' && (
           <div className="space-y-3">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-green-50 p-3 rounded-lg">
-                <h4 className="font-semibold text-green-800 mb-2">📍 Pickup</h4>
-                <div className="text-sm space-y-1">
-                  <p><strong>Date:</strong> {new Date(booking.pickupDateTime).toLocaleString()}</p>
-                  <p><strong>Pilot:</strong> {booking.pickupPilot}</p>
-                  <p><strong>Vehicle:</strong> {booking.pickupVehicle}</p>
-                  <p><strong>Cost:</strong> ₹{booking.pickupCost}</p>
-                  <p><strong>Payment:</strong> {booking.pickupPaymentMode}</p>
-                </div>
-              </div>
-              <div className="bg-blue-50 p-3 rounded-lg">
-                <h4 className="font-semibold text-blue-800 mb-2">🎯 Drop</h4>
-                <div className="text-sm space-y-1">
-                  <p><strong>Date:</strong> {new Date(booking.dropDateTime).toLocaleString()}</p>
-                  <p><strong>Pilot:</strong> {booking.dropPilot}</p>
-                  <p><strong>Vehicle:</strong> {booking.dropVehicle}</p>
-                  <p><strong>Cost:</strong> ₹{booking.dropCost}</p>
-                  <p><strong>Payment:</strong> {booking.dropPaymentMode}</p>
-                </div>
+            <div className="bg-blue-50 p-3 rounded-lg">
+              <h4 className="font-semibold text-blue-800 mb-2">✈️ Airport Booking</h4>
+              <div className="text-sm space-y-1">
+                <p><strong>Type:</strong> {booking.bookingType === 'pickup' ? 'Pickup from Airport' : 'Drop at Airport'}</p>
+                <p><strong>Date:</strong> {booking.date}</p>
+                <p><strong>Time:</strong> {booking.time}</p>
+                <p><strong>Pilot:</strong> {booking.pilotName}</p>
+                <p><strong>Vehicle:</strong> {booking.vehicleNumber}</p>
+                <p><strong>Cost:</strong> ₹{booking.cost}</p>
+                <p><strong>Payment:</strong> {booking.paymentMode}</p>
+                {booking.paymentMode === 'Part Payment' && (
+                  <p><strong>Payment Split:</strong> ₹{booking.partPaymentCash} Cash + ₹{booking.partPaymentUPI} UPI</p>
+                )}
               </div>
             </div>
           </div>
@@ -115,25 +108,31 @@ export const BookingsView = () => {
         
         {booking.type === 'Rental Package' && (
           <div className="bg-orange-50 p-3 rounded-lg">
+            <h4 className="font-semibold text-orange-800 mb-2">📦 Rental Package</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div className="space-y-1">
                 <p className="flex items-center gap-1">
                   <MapPin className="w-3 h-3" />
                   <strong>Pickup:</strong> {booking.pickupLocation}
                 </p>
-                <p><strong>Date:</strong> {new Date(booking.pickupDateTime).toLocaleString()}</p>
+                <p><strong>Drop:</strong> {booking.dropLocation}</p>
+                <p><strong>Date:</strong> {booking.date}</p>
+                <p><strong>Time:</strong> {booking.time}</p>
+              </div>
+              <div className="space-y-1">
+                <p><strong>Pilot:</strong> {booking.pilotName}</p>
                 <p className="flex items-center gap-1">
                   <Car className="w-3 h-3" />
                   <strong>Vehicle:</strong> {booking.vehicleNumber}
                 </p>
-              </div>
-              <div className="space-y-1">
-                <p><strong>Pilot:</strong> {booking.pilotName}</p>
                 <p className="flex items-center gap-1">
                   <IndianRupee className="w-3 h-3" />
                   <strong>Cost:</strong> ₹{booking.cost}
                 </p>
                 <p><strong>Payment:</strong> {booking.paymentMode}</p>
+                {booking.paymentMode === 'Part Payment' && (
+                  <p><strong>Payment Split:</strong> ₹{booking.partPaymentCash} Cash + ₹{booking.partPaymentUPI} UPI</p>
+                )}
               </div>
             </div>
           </div>
@@ -141,13 +140,14 @@ export const BookingsView = () => {
         
         {booking.type === 'Subscription' && (
           <div className="bg-purple-50 p-3 rounded-lg">
+            <h4 className="font-semibold text-purple-800 mb-2">🔁 Subscription</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div className="space-y-1">
                 <p className="flex items-center gap-1">
                   <MapPin className="w-3 h-3" />
-                  <strong>Pickup:</strong> {booking.pickupLocation}
+                  <strong>Pickup:</strong> {booking.pickupLocation} at {booking.pickupTime}
                 </p>
-                <p><strong>Time:</strong> {booking.pickupTime}</p>
+                <p><strong>Drop:</strong> {booking.dropLocation} at {booking.dropTime}</p>
               </div>
               <div className="space-y-1">
                 <p><strong>Pilot:</strong> {booking.pilotName}</p>
