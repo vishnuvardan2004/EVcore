@@ -1,60 +1,37 @@
 
 import React from 'react';
-import { Button } from './ui/button';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Menu } from 'lucide-react';
 
 interface PageLayoutProps {
-  children: React.ReactNode;
-  title?: string;
+  title: string;
   subtitle?: string;
-  showBackButton?: boolean;
+  children: React.ReactNode;
 }
 
-export const PageLayout: React.FC<PageLayoutProps> = ({ 
-  children, 
-  title, 
-  subtitle, 
-  showBackButton = true 
+export const PageLayout: React.FC<PageLayoutProps> = ({
+  title,
+  subtitle,
+  children,
 }) => {
-  const navigate = useNavigate();
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-4">
-              {showBackButton && (
-                <Button 
-                  onClick={() => navigate('/')} 
-                  variant="ghost" 
-                  size="icon"
-                >
-                  <ArrowLeft className="h-6 w-6" />
-                </Button>
-              )}
-              <Button variant="ghost" size="icon">
-                <Menu className="h-6 w-6" />
-              </Button>
-              {title && (
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
-                  {subtitle && (
-                    <p className="text-gray-600 text-sm">{subtitle}</p>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header Section */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+            {title}
+          </h1>
+          {subtitle && (
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              {subtitle}
+            </p>
+          )}
         </div>
-      </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {children}
-      </main>
+        {/* Main Content */}
+        <div className="max-w-7xl mx-auto">
+          {children}
+        </div>
+      </div>
     </div>
   );
 };
