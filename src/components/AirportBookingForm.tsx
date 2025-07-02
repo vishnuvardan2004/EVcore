@@ -5,13 +5,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
+import { Form } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { Plane } from 'lucide-react';
+import { CustomerInformationSection } from './forms/CustomerInformationSection';
+import { PickupDetailsSection } from './forms/PickupDetailsSection';
+import { DropDetailsSection } from './forms/DropDetailsSection';
 
 const airportBookingSchema = z.object({
   customerName: z.string().min(2, 'Customer name must be at least 2 characters'),
@@ -79,268 +78,33 @@ export const AirportBookingForm = () => {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Customer Information */}
-            <Card className="border-gray-200">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  👤 Customer Information
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="customerName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Customer Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter customer name" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="customerPhone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Phone Number</FormLabel>
-                      <FormControl>
-                        <Input placeholder="10-digit phone number" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </CardContent>
-            </Card>
+            <CustomerInformationSection
+              control={form.control}
+              customerNameField="customerName"
+              customerPhoneField="customerPhone"
+            />
 
-            {/* Pickup Details */}
-            <Card className="border-green-200 bg-green-50/30">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  📍 Pickup Details
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="pickupDateTime"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Pickup Date & Time</FormLabel>
-                        <FormControl>
-                          <Input type="datetime-local" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="pickupCost"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Pickup Cost (₹)</FormLabel>
-                        <FormControl>
-                          <Input type="number" placeholder="Enter amount" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="pickupPilot"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Pickup Pilot</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select pilot" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {pilots.map((pilot) => (
-                              <SelectItem key={pilot} value={pilot}>
-                                {pilot}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="pickupVehicle"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Pickup Vehicle</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select vehicle" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {vehicles.map((vehicle) => (
-                              <SelectItem key={vehicle} value={vehicle}>
-                                {vehicle}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <FormField
-                  control={form.control}
-                  name="pickupPaymentMode"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Pickup Payment Mode</FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className="flex gap-6"
-                        >
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="UPI" id="pickup-upi" />
-                            <Label htmlFor="pickup-upi">UPI</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="Cash" id="pickup-cash" />
-                            <Label htmlFor="pickup-cash">Cash</Label>
-                          </div>
-                        </RadioGroup>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </CardContent>
-            </Card>
+            <PickupDetailsSection
+              control={form.control}
+              pickupDateTimeField="pickupDateTime"
+              pickupCostField="pickupCost"
+              pickupPilotField="pickupPilot"
+              pickupVehicleField="pickupVehicle"
+              pickupPaymentModeField="pickupPaymentMode"
+              pilots={pilots}
+              vehicles={vehicles}
+            />
 
-            {/* Drop Details */}
-            <Card className="border-blue-200 bg-blue-50/30">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  🎯 Drop Details
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="dropDateTime"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Drop Date & Time</FormLabel>
-                        <FormControl>
-                          <Input type="datetime-local" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="dropCost"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Drop Cost (₹)</FormLabel>
-                        <FormControl>
-                          <Input type="number" placeholder="Enter amount" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="dropPilot"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Drop Pilot</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select pilot" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {pilots.map((pilot) => (
-                              <SelectItem key={pilot} value={pilot}>
-                                {pilot}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="dropVehicle"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Drop Vehicle</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select vehicle" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {vehicles.map((vehicle) => (
-                              <SelectItem key={vehicle} value={vehicle}>
-                                {vehicle}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <FormField
-                  control={form.control}
-                  name="dropPaymentMode"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Drop Payment Mode</FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className="flex gap-6"
-                        >
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="UPI" id="drop-upi" />
-                            <Label htmlFor="drop-upi">UPI</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="Cash" id="drop-cash" />
-                            <Label htmlFor="drop-cash">Cash</Label>
-                          </div>
-                        </RadioGroup>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </CardContent>
-            </Card>
+            <DropDetailsSection
+              control={form.control}
+              dropDateTimeField="dropDateTime"
+              dropCostField="dropCost"
+              dropPilotField="dropPilot"
+              dropVehicleField="dropVehicle"
+              dropPaymentModeField="dropPaymentMode"
+              pilots={pilots}
+              vehicles={vehicles}
+            />
 
             <div className="flex justify-end pt-4">
               <Button type="submit" size="lg" className="min-w-32">
