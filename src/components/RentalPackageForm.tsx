@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -7,7 +7,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
@@ -21,8 +20,8 @@ const rentalPackageSchema = z.object({
   dropLocation: z.string().min(2, 'Drop location must be at least 2 characters'),
   date: z.string().min(1, 'Date is required'),
   time: z.string().min(1, 'Time is required'),
-  pilotName: z.string().min(1, 'Pilot is required'),
-  vehicleNumber: z.string().min(1, 'Vehicle is required'),
+  pilotName: z.string().min(1, 'Pilot name is required'),
+  vehicleNumber: z.string().min(1, 'Vehicle number is required'),
   cost: z.string().min(1, 'Cost is required'),
   paymentMode: z.enum(['Cash', 'UPI', 'Part Payment']),
   partPaymentCash: z.string().optional(),
@@ -39,9 +38,6 @@ const rentalPackageSchema = z.object({
 
 type RentalPackageFormData = z.infer<typeof rentalPackageSchema>;
 
-const pilots = ['John Doe', 'Jane Smith', 'Mike Johnson', 'Sarah Wilson'];
-const vehicles = ['KA01AB1234', 'KA02CD5678', 'KA03EF9012', 'KA04GH3456'];
-
 export const RentalPackageForm = () => {
   const { toast } = useToast();
   
@@ -53,6 +49,16 @@ export const RentalPackageForm = () => {
   });
 
   const watchPaymentMode = form.watch('paymentMode');
+
+  // Auto-fill current date and time
+  useEffect(() => {
+    const now = new Date();
+    const currentDate = now.toISOString().split('T')[0];
+    const currentTime = now.toTimeString().slice(0, 5);
+    
+    form.setValue('date', currentDate);
+    form.setValue('time', currentTime);
+  }, [form]);
 
   const onSubmit = (data: RentalPackageFormData) => {
     console.log('Rental package booking submitted:', data);
@@ -73,6 +79,15 @@ export const RentalPackageForm = () => {
     });
 
     form.reset();
+    
+    // Re-apply auto-fill after reset
+    const resetNow = new Date();
+    const resetCurrentDate = resetNow.toISOString().split('T')[0];
+    const resetCurrentTime = resetNow.toTimeString().slice(0, 5);
+    
+    form.setValue('date', resetCurrentDate);
+    form.setValue('time', resetCurrentTime);
+    form.setValue('paymentMode', 'Cash');
   };
 
   return (
@@ -149,7 +164,12 @@ export const RentalPackageForm = () => {
                       <FormItem>
                         <FormLabel>Time</FormLabel>
                         <FormControl>
-                          <Input type="time" {...field} />
+                          <Input 
+                            type="time" 
+                            placeholder="HH:MM"
+                            pattern="[0-9]{2}:[0-9]{2}"
+                            {...field} 
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -161,20 +181,9 @@ export const RentalPackageForm = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Pilot Name</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select pilot" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {pilots.map((pilot) => (
-                              <SelectItem key={pilot} value={pilot}>
-                                {pilot}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <FormControl>
+                          <Input placeholder="Enter pilot name" {...field} />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -185,20 +194,9 @@ export const RentalPackageForm = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Vehicle Number</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select vehicle" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {vehicles.map((vehicle) => (
-                              <SelectItem key={vehicle} value={vehicle}>
-                                {vehicle}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <FormControl>
+                          <Input placeholder="Enter vehicle number" {...field} />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}

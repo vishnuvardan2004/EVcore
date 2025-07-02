@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -7,7 +7,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Calendar } from 'lucide-react';
 import { CustomerInformationSection } from './forms/CustomerInformationSection';
@@ -19,14 +18,11 @@ const subscriptionBookingSchema = z.object({
   pickupLocation: z.string().min(2, 'Pickup location must be at least 2 characters'),
   dropTime: z.string().min(1, 'Drop time is required'),
   dropLocation: z.string().min(2, 'Drop location must be at least 2 characters'),
-  pilotName: z.string().min(1, 'Pilot is required'),
-  vehicleNumber: z.string().min(1, 'Vehicle is required'),
+  pilotName: z.string().min(1, 'Pilot name is required'),
+  vehicleNumber: z.string().min(1, 'Vehicle number is required'),
 });
 
 type SubscriptionBookingFormData = z.infer<typeof subscriptionBookingSchema>;
-
-const pilots = ['John Doe', 'Jane Smith', 'Mike Johnson', 'Sarah Wilson'];
-const vehicles = ['KA01AB1234', 'KA02CD5678', 'KA03EF9012', 'KA04GH3456'];
 
 export const SubscriptionBookingForm = () => {
   const { toast } = useToast();
@@ -34,6 +30,15 @@ export const SubscriptionBookingForm = () => {
   const form = useForm<SubscriptionBookingFormData>({
     resolver: zodResolver(subscriptionBookingSchema),
   });
+
+  // Auto-fill current time for pickup and drop times
+  useEffect(() => {
+    const now = new Date();
+    const currentTime = now.toTimeString().slice(0, 5);
+    
+    form.setValue('pickupTime', currentTime);
+    form.setValue('dropTime', currentTime);
+  }, [form]);
 
   const onSubmit = (data: SubscriptionBookingFormData) => {
     console.log('Subscription booking submitted:', data);
@@ -54,6 +59,13 @@ export const SubscriptionBookingForm = () => {
     });
 
     form.reset();
+    
+    // Re-apply auto-fill after reset
+    const resetNow = new Date();
+    const resetCurrentTime = resetNow.toTimeString().slice(0, 5);
+    
+    form.setValue('pickupTime', resetCurrentTime);
+    form.setValue('dropTime', resetCurrentTime);
   };
 
   return (
@@ -91,7 +103,12 @@ export const SubscriptionBookingForm = () => {
                       <FormItem>
                         <FormLabel>Pickup Time</FormLabel>
                         <FormControl>
-                          <Input type="time" {...field} />
+                          <Input 
+                            type="time" 
+                            placeholder="HH:MM"
+                            pattern="[0-9]{2}:[0-9]{2}"
+                            {...field} 
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -117,7 +134,12 @@ export const SubscriptionBookingForm = () => {
                       <FormItem>
                         <FormLabel>Drop Time</FormLabel>
                         <FormControl>
-                          <Input type="time" {...field} />
+                          <Input 
+                            type="time" 
+                            placeholder="HH:MM"
+                            pattern="[0-9]{2}:[0-9]{2}"
+                            {...field} 
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -142,20 +164,9 @@ export const SubscriptionBookingForm = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Pilot Name</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select pilot" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {pilots.map((pilot) => (
-                              <SelectItem key={pilot} value={pilot}>
-                                {pilot}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <FormControl>
+                          <Input placeholder="Enter pilot name" {...field} />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -166,20 +177,9 @@ export const SubscriptionBookingForm = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Vehicle Number</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select vehicle" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {vehicles.map((vehicle) => (
-                              <SelectItem key={vehicle} value={vehicle}>
-                                {vehicle}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <FormControl>
+                          <Input placeholder="Enter vehicle number" {...field} />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
