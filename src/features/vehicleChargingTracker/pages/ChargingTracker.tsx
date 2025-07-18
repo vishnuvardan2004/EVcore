@@ -4,9 +4,9 @@ import { Button } from '../../../shared/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useToast } from '../../../shared/hooks/use-toast';
-import { AccessForm } from '../../../shared/components/AccessForm';
-import { StartChargingForm } from '../../../shared/components/StartChargingForm';
-import { EndChargingForm } from '../../../shared/components/EndChargingForm';
+import { AccessForm } from '../components/AccessForm';
+import { StartChargingForm } from '../components/StartChargingForm';
+import { EndChargingForm } from '../components/EndChargingForm';
 
 type FlowType = 'access' | 'start' | 'end';
 

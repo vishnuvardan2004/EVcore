@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { RecentVehicleActivities } from './RecentVehicleActivities';
-import { LiveDeploymentStatus } from './LiveDeploymentStatus';
-import { AlertsWarnings } from './AlertsWarnings';
+import { RecentVehicleActivities } from '../features/vehicleDeployment/components/RecentVehicleActivities';
+import { LiveDeploymentStatus } from '../features/vehicleDeployment/components/LiveDeploymentStatus';
+import { AlertsWarnings } from '../features/vehicleDeployment/components/AlertsWarnings';
 
 export const DashboardLayout: React.FC = () => {
   return (

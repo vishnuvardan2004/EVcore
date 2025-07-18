@@ -1,31 +1,33 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { ChargingTrackerLayout } from '../components/ChargingTrackerLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../shared/components/ui/card';
-import { Badge } from '../../../shared/components/ui/badge';
-import { Button } from '../../../shared/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../shared/components/ui/select';
-import { Input } from '../../../shared/components/ui/input';
+import { PageLayout } from '../../../components/PageLayout';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Search, MapPin, Battery, Clock, User, Car } from 'lucide-react';
-import { format } from 'date-fns';
+import { ArrowLeft, Search, Download, FileText, Eye } from 'lucide-react';
 
 interface ChargingSession {
   id: string;
   vehicleNumber: string;
   pilotId: string;
-  startTime: Date;
-  endTime: Date;
-  duration: number; // in minutes
+  startTime: string;
+  endTime: string;
   startCharge: number;
   endCharge: number;
-  unitsConsumed: number;
+  startRange: number;
+  endRange: number;
+  units: number;
   cost: number;
+  paymentMode: 'UPI' | 'Cash';
   location: 'HUB' | 'Outside';
   locationName?: string;
   brand?: string;
-  paymentMode: 'UPI' | 'Cash';
-  status: 'Completed' | 'In Progress' | 'Failed';
+  hasReceipt: boolean;
 }
 
 // Mock data - replace with actual data fetching
@@ -34,260 +36,270 @@ const mockSessions: ChargingSession[] = [
     id: '1',
     vehicleNumber: 'KA01AB1234',
     pilotId: 'P001',
-    startTime: new Date('2024-01-15T09:30:00'),
-    endTime: new Date('2024-01-15T11:45:00'),
-    duration: 135,
+    startTime: '2024-01-15 09:30',
+    endTime: '2024-01-15 11:45',
     startCharge: 25,
     endCharge: 85,
-    unitsConsumed: 45.5,
+    startRange: 80,
+    endRange: 280,
+    units: 45.5,
     cost: 320,
-    location: 'HUB',
     paymentMode: 'UPI',
-    status: 'Completed'
+    location: 'HUB',
+    hasReceipt: true
   },
   {
     id: '2',
     vehicleNumber: 'KA02CD5678',
     pilotId: 'P002',
-    startTime: new Date('2024-01-15T14:20:00'),
-    endTime: new Date('2024-01-15T16:50:00'),
-    duration: 150,
+    startTime: '2024-01-15 14:20',
+    endTime: '2024-01-15 16:10',
     startCharge: 15,
     endCharge: 90,
-    unitsConsumed: 52.0,
+    startRange: 45,
+    endRange: 295,
+    units: 52.0,
     cost: 450,
-    location: 'Outside',
-    locationName: 'Mall Charging Station',
-    brand: 'Tata Power',
     paymentMode: 'Cash',
-    status: 'Completed'
-  },
-  {
-    id: '3',
-    vehicleNumber: 'KA03EF9012',
-    pilotId: 'P001',
-    startTime: new Date('2024-01-16T08:15:00'),
-    endTime: new Date('2024-01-16T10:30:00'),
-    duration: 135,
-    startCharge: 30,
-    endCharge: 80,
-    unitsConsumed: 38.2,
-    cost: 275,
-    location: 'HUB',
-    paymentMode: 'UPI',
-    status: 'Completed'
+    location: 'Outside',
+    locationName: 'City Center Mall',
+    brand: 'ChargePoint',
+    hasReceipt: false
   }
 ];
 
 const ChargingHistory = () => {
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = React.useState('');
-  const [filterStatus, setFilterStatus] = React.useState('all');
-  const [filterLocation, setFilterLocation] = React.useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [locationFilter, setLocationFilter] = useState('all');
+  const [paymentFilter, setPaymentFilter] = useState('all');
+  const [sessions] = useState<ChargingSession[]>(mockSessions);
 
-  const filteredSessions = mockSessions.filter(session => {
-    const matchesSearch = session.vehicleNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         session.pilotId.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === 'all' || session.status.toLowerCase() === filterStatus;
-    const matchesLocation = filterLocation === 'all' || session.location === filterLocation;
+  const filteredSessions = sessions.filter(session => {
+    const matchesSearch = 
+      session.vehicleNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      session.pilotId.toLowerCase().includes(searchTerm.toLowerCase());
     
-    return matchesSearch && matchesStatus && matchesLocation;
+    const matchesLocation = locationFilter === 'all' || session.location === locationFilter;
+    const matchesPayment = paymentFilter === 'all' || session.paymentMode === paymentFilter;
+    
+    return matchesSearch && matchesLocation && matchesPayment;
   });
 
-  const totalSessions = filteredSessions.length;
-  const totalUnits = filteredSessions.reduce((sum, session) => sum + session.unitsConsumed, 0);
-  const totalCost = filteredSessions.reduce((sum, session) => sum + session.cost, 0);
-  const averageCost = totalSessions > 0 ? totalCost / totalUnits : 0;
+  const handleExportCSV = () => {
+    const headers = [
+      'Vehicle Number', 'Pilot ID', 'Start Time', 'End Time', 
+      'Start Charge %', 'End Charge %', 'Start Range', 'End Range',
+      'Units', 'Cost', 'Payment Mode', 'Location'
+    ];
+    
+    const csvContent = [
+      headers.join(','),
+      ...filteredSessions.map(session => [
+        session.vehicleNumber,
+        session.pilotId,
+        session.startTime,
+        session.endTime,
+        session.startCharge,
+        session.endCharge,
+        session.startRange,
+        session.endRange,
+        session.units,
+        session.cost,
+        session.paymentMode,
+        session.location
+      ].join(','))
+    ].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'charging-history.csv';
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
+  const handleViewDetails = (session: ChargingSession) => {
+    console.log('View details for session:', session);
+    // TODO: Open detailed modal
+  };
 
   return (
     <ChargingTrackerLayout 
-      title="📊 Charging History" 
-      subtitle="View all charging sessions and records"
+      title="⚡ Charging History" 
+      subtitle="View all completed charging sessions"
     >
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div></div>
+          <div className="flex gap-2">
+            <Button onClick={handleExportCSV} variant="outline" className="gap-2">
+              <Download className="w-4 h-4" />
+              Export CSV
+            </Button>
+            <Button variant="outline" className="gap-2">
+              <FileText className="w-4 h-4" />
+              Export PDF
+            </Button>
+          </div>
         </div>
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-2">
-                <Battery className="h-8 w-8 text-blue-600" />
-                <div>
-                  <p className="text-2xl font-bold">{totalSessions}</p>
-                  <p className="text-sm text-gray-600">Total Sessions</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-2">
-                <div className="text-2xl">⚡</div>
-                <div>
-                  <p className="text-2xl font-bold">{totalUnits.toFixed(1)}</p>
-                  <p className="text-sm text-gray-600">Total kWh</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-2">
-                <div className="text-2xl">💰</div>
-                <div>
-                  <p className="text-2xl font-bold">₹{totalCost.toLocaleString()}</p>
-                  <p className="text-sm text-gray-600">Total Cost</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-2">
-                <div className="text-2xl">📊</div>
-                <div>
-                  <p className="text-2xl font-bold">₹{averageCost.toFixed(2)}</p>
-                  <p className="text-sm text-gray-600">Avg. Cost/kWh</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Filters */}
         <Card>
           <CardHeader>
-            <CardTitle>Filter Sessions</CardTitle>
+            <CardTitle>Search & Filters</CardTitle>
+            <CardDescription>Filter charging sessions by vehicle, pilot, or other criteria</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-wrap gap-4">
-              <div className="flex items-center gap-2 min-w-[250px]">
-                <Search className="w-4 h-4 text-gray-500" />
-                <Input
-                  placeholder="Search by vehicle or pilot ID..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="search">Search</Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Input
+                    id="search"
+                    placeholder="Vehicle number or Pilot ID"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
               </div>
               
-              <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="w-40">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="in progress">In Progress</SelectItem>
-                  <SelectItem value="failed">Failed</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="space-y-2">
+                <Label>Location</Label>
+                <Select value={locationFilter} onValueChange={setLocationFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All locations" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Locations</SelectItem>
+                    <SelectItem value="HUB">🏢 HUB</SelectItem>
+                    <SelectItem value="Outside">🌍 Outside</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               
-              <Select value={filterLocation} onValueChange={setFilterLocation}>
-                <SelectTrigger className="w-40">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Locations</SelectItem>
-                  <SelectItem value="HUB">HUB</SelectItem>
-                  <SelectItem value="Outside">Outside</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="space-y-2">
+                <Label>Payment Mode</Label>
+                <Select value={paymentFilter} onValueChange={setPaymentFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All payment modes" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Payment Modes</SelectItem>
+                    <SelectItem value="UPI">📱 UPI</SelectItem>
+                    <SelectItem value="Cash">💵 Cash</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="flex items-end">
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setSearchTerm('');
+                    setLocationFilter('all');
+                    setPaymentFilter('all');
+                  }}
+                  className="w-full"
+                >
+                  Clear Filters
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Sessions List */}
         <Card>
           <CardHeader>
             <CardTitle>Charging Sessions ({filteredSessions.length})</CardTitle>
             <CardDescription>
-              Complete history of all charging sessions
+              Click on any row to view detailed information
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {filteredSessions.map((session) => (
-                <Card key={session.id} className="border-l-4 border-l-blue-500">
-                  <CardContent className="pt-6">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                      <div className="flex-1 space-y-2">
-                        <div className="flex items-center gap-4 flex-wrap">
-                          <div className="flex items-center gap-2">
-                            <Car className="w-4 h-4 text-blue-600" />
-                            <span className="font-medium">{session.vehicleNumber}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <User className="w-4 h-4 text-green-600" />
-                            <span className="text-sm">{session.pilotId}</span>
-                          </div>
-                          <Badge variant={session.status === 'Completed' ? 'default' : session.status === 'In Progress' ? 'secondary' : 'destructive'}>
-                            {session.status}
-                          </Badge>
-                        </div>
-                        
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                          <div className="flex items-center gap-2">
-                            <Clock className="w-3 h-3 text-gray-400" />
-                            <div>
-                              <p className="text-gray-600">Duration</p>
-                              <p className="font-medium">{Math.floor(session.duration / 60)}h {session.duration % 60}m</p>
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-center gap-2">
-                            <Battery className="w-3 h-3 text-gray-400" />
-                            <div>
-                              <p className="text-gray-600">Charge</p>
-                              <p className="font-medium">{session.startCharge}% → {session.endCharge}%</p>
-                            </div>
-                          </div>
-                          
-                          <div>
-                            <p className="text-gray-600">Units</p>
-                            <p className="font-medium">{session.unitsConsumed} kWh</p>
-                          </div>
-                          
-                          <div>
-                            <p className="text-gray-600">Cost</p>
-                            <p className="font-medium text-green-600">₹{session.cost}</p>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center gap-4 text-sm">
-                          <div className="flex items-center gap-2">
-                            <MapPin className="w-3 h-3 text-gray-400" />
-                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                              session.location === 'HUB' 
-                                ? 'bg-purple-100 text-purple-800' 
-                                : 'bg-orange-100 text-orange-800'
-                            }`}>
-                              {session.location === 'HUB' ? '🏢' : '🌍'} {session.location}
-                              {session.location === 'Outside' && session.locationName && ` - ${session.locationName}`}
-                            </span>
-                          </div>
-                          
-                          <span className="text-gray-600">
-                            {format(session.startTime, 'PPP p')} - {format(session.endTime, 'p')}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-              
-              {filteredSessions.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
-                  No charging sessions found matching your criteria.
-                </div>
-              )}
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Vehicle</TableHead>
+                    <TableHead>Pilot ID</TableHead>
+                    <TableHead>Start Time</TableHead>
+                    <TableHead>End Time</TableHead>
+                    <TableHead>Charge %</TableHead>
+                    <TableHead>Range (km)</TableHead>
+                    <TableHead>Units</TableHead>
+                    <TableHead>Cost</TableHead>
+                    <TableHead>Payment</TableHead>
+                    <TableHead>Location</TableHead>
+                    <TableHead>Receipt</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredSessions.map((session) => (
+                    <TableRow 
+                      key={session.id} 
+                      className="cursor-pointer hover:bg-gray-50"
+                      onClick={() => handleViewDetails(session)}
+                    >
+                      <TableCell className="font-medium">{session.vehicleNumber}</TableCell>
+                      <TableCell>{session.pilotId}</TableCell>
+                      <TableCell>{session.startTime}</TableCell>
+                      <TableCell>{session.endTime}</TableCell>
+                      <TableCell>{session.startCharge}% → {session.endCharge}%</TableCell>
+                      <TableCell>{session.startRange} → {session.endRange}</TableCell>
+                      <TableCell>{session.units} kWh</TableCell>
+                      <TableCell>₹{session.cost}</TableCell>
+                      <TableCell>
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                          session.paymentMode === 'UPI' 
+                            ? 'bg-blue-100 text-blue-800' 
+                            : 'bg-green-100 text-green-800'
+                        }`}>
+                          {session.paymentMode === 'UPI' ? '📱' : '💵'} {session.paymentMode}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                          session.location === 'HUB' 
+                            ? 'bg-purple-100 text-purple-800' 
+                            : 'bg-orange-100 text-orange-800'
+                        }`}>
+                          {session.location === 'HUB' ? '🏢' : '🌍'} {session.location}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        {session.hasReceipt ? (
+                          <span className="text-green-600">📎</span>
+                        ) : (
+                          <span className="text-gray-400">—</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewDetails(session);
+                          }}
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
+            
+            {filteredSessions.length === 0 && (
+              <div className="text-center py-8 text-gray-500">
+                No charging sessions found matching your criteria.
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

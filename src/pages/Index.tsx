@@ -1,7 +1,7 @@
 
 import React, { useEffect } from 'react';
 import { PageLayout } from '../components/PageLayout';
-import { VehicleDeploymentForm } from '../components/VehicleDeploymentForm';
+import { VehicleDeploymentForm } from '../features/vehicleDeployment/components/VehicleDeploymentForm';
 import { DashboardLayout } from '../components/DashboardLayout';
 import { AppFooter } from '../components/AppFooter';
 

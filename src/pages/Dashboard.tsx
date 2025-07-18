@@ -28,7 +28,7 @@ const subPlatforms: SubPlatform[] = [
     icon: '🕒',
     description: 'Track employee & pilot attendance',
     route: '/attendance',
-    isActive: false
+    isActive: true
   },
   {
     id: 'database',
@@ -36,7 +36,7 @@ const subPlatforms: SubPlatform[] = [
     icon: '🗂️',
     description: 'Manage staff, pilots, and customer records',
     route: '/database',
-    isActive: false
+    isActive: true
   },
   {
     id: 'driver-induction',
@@ -144,9 +144,6 @@ const Dashboard = () => {
               Powering sustainable transportation through intelligent fleet management
             </p>
             <div className="flex justify-center gap-4 mt-4 text-sm text-muted-foreground">
-              <span>• Real-time Tracking</span>
-              <span>• Automated Reporting</span>
-              <span>• Offline-ready</span>
             </div>
           </div>
         </div>

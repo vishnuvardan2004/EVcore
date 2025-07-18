@@ -1,4 +1,3 @@
-
 import jsPDF from 'jspdf';
 import { TripSummary } from '../types/vehicle';
 
@@ -51,3 +50,5 @@ export const calculateDuration = (outTime: string, inTime: string): string => {
   
   return `${diffHours}h ${diffMinutes}m`;
 };
+
+

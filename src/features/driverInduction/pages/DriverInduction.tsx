@@ -1,9 +1,10 @@
 
 import React, { useState } from 'react';
-import { PageLayout } from '../../../shared/components/PageLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '../../../shared/components/ui/card';
-import { Button } from '../../../shared/components/ui/button';
-import { useToast } from '../../../shared/hooks/use-toast';
+import { PageLayout } from '../../../components/PageLayout';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, Save, CheckCircle } from 'lucide-react';
 import { PersonalInformationSection } from '../components/PersonalInformationSection';
 import { DrivingInformationSection } from '../components/DrivingInformationSection';
 import { IdentityDocumentsSection } from '../components/IdentityDocumentsSection';
@@ -12,159 +13,257 @@ import { AddressDetailsSection } from '../components/AddressDetailsSection';
 import { PVCInformationSection } from '../components/PVCInformationSection';
 import { FamilyEmergencySection } from '../components/FamilyEmergencySection';
 import { MedicalInductionSection } from '../components/MedicalInductionSection';
-import { CheckCircle, Save } from 'lucide-react';
+import { useToast } from '../../../hooks/use-toast';
 
-const DriverInduction = () => {
-  const { toast } = useToast();
-  
-  const [personalInfo, setPersonalInfo] = useState({
+export interface DriverInductionData {
+  personalInfo: {
+    fullName: string;
+    mobileNumber: string;
+    emailId: string;
+    dateOfBirth: Date | undefined;
+    workingDays: string;
+    salary: string;
+    designation: string;
+    yearsOfExperience: string;
+    previousCompany: string;
+  };
+  drivingInfo: {
+    licenceNumber: string;
+    licencePic: File | null;
+    drivingCertificate: File | null;
+  };
+  identityDocs: {
+    aadhaarNumber: string;
+    aadhaarPic: File | null;
+    panNumber: string;
+    panPic: File | null;
+  };
+  bankingDetails: {
+    bankName: string;
+    accountNumber: string;
+    ifscCode: string;
+    bankBranch: string;
+    bankProof: File | null;
+  };
+  addressDetails: {
+    presentAddress: string;
+    presentAddressPhoto: File | null;
+    permanentAddress: string;
+    permanentAddressProof: File | null;
+    electricityBill: File | null;
+  };
+  pvcInfo: {
+    acknowledgementDate: Date | undefined;
+    issueDate: Date | undefined;
+    expiryDate: Date | undefined;
+    pvcPhoto: File | null;
+  };
+  familyEmergency: {
+    parentName: string;
+    parentMobile: string;
+    parentsPhoto: File | null;
+    emergencyContactName: string;
+    emergencyContactNumber: string;
+  };
+  medicalInduction: {
+    medicalTestReport: File | null;
+    medicalTestDate: Date | undefined;
+    medicalTestExpiry: Date | undefined;
+    inductionTeamMember: string;
+    agreementCopy: File | null;
+    agreementDate: Date | undefined;
+  };
+}
+
+const initialData: DriverInductionData = {
+  personalInfo: {
     fullName: '',
     mobileNumber: '',
     emailId: '',
-    dateOfBirth: undefined as Date | undefined,
+    dateOfBirth: undefined,
     workingDays: '',
     salary: '',
     designation: '',
     yearsOfExperience: '',
     previousCompany: '',
-  });
-
-  const [drivingInfo, setDrivingInfo] = useState({
+  },
+  drivingInfo: {
     licenceNumber: '',
-    licencePic: null as File | null,
-    drivingCertificate: null as File | null,
-  });
-
-  const [identityDocs, setIdentityDocs] = useState({
+    licencePic: null,
+    drivingCertificate: null,
+  },
+  identityDocs: {
     aadhaarNumber: '',
-    aadhaarPic: null as File | null,
+    aadhaarPic: null,
     panNumber: '',
-    panPic: null as File | null,
-  });
-
-  const [bankingDetails, setBankingDetails] = useState({
+    panPic: null,
+  },
+  bankingDetails: {
     bankName: '',
     accountNumber: '',
     ifscCode: '',
     bankBranch: '',
-    bankProof: null as File | null,
-  });
-
-  const [addressDetails, setAddressDetails] = useState({
+    bankProof: null,
+  },
+  addressDetails: {
     presentAddress: '',
-    presentAddressPhoto: null as File | null,
+    presentAddressPhoto: null,
     permanentAddress: '',
-    permanentAddressProof: null as File | null,
-    electricityBill: null as File | null,
-  });
-
-  const [pvcInfo, setPvcInfo] = useState({
-    acknowledgementDate: undefined as Date | undefined,
-    issueDate: undefined as Date | undefined,
-    expiryDate: undefined as Date | undefined,
-    pvcPhoto: null as File | null,
-  });
-
-  const [familyEmergency, setFamilyEmergency] = useState({
+    permanentAddressProof: null,
+    electricityBill: null,
+  },
+  pvcInfo: {
+    acknowledgementDate: undefined,
+    issueDate: undefined,
+    expiryDate: undefined,
+    pvcPhoto: null,
+  },
+  familyEmergency: {
     parentName: '',
     parentMobile: '',
-    parentsPhoto: null as File | null,
+    parentsPhoto: null,
     emergencyContactName: '',
     emergencyContactNumber: '',
-  });
-
-  const [medicalInduction, setMedicalInduction] = useState({
-    medicalTestReport: null as File | null,
-    medicalTestDate: undefined as Date | undefined,
-    medicalTestExpiry: undefined as Date | undefined,
+  },
+  medicalInduction: {
+    medicalTestReport: null,
+    medicalTestDate: undefined,
+    medicalTestExpiry: undefined,
     inductionTeamMember: '',
-    agreementCopy: null as File | null,
-    agreementDate: undefined as Date | undefined,
-  });
+    agreementCopy: null,
+    agreementDate: undefined,
+  },
+};
+
+const DriverInduction = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [formData, setFormData] = useState<DriverInductionData>(initialData);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const updateFormData = (section: keyof DriverInductionData, data: any) => {
+    setFormData(prev => ({
+      ...prev,
+      [section]: { ...prev[section], ...data }
+    }));
+  };
 
   const handleSubmit = () => {
-    const allData = {
-      personalInfo,
-      drivingInfo,
-      identityDocs,
-      bankingDetails,
-      addressDetails,
-      pvcInfo,
-      familyEmergency,
-      medicalInduction,
-    };
-
-    console.log('Driver Induction Data:', allData);
+    // Here you would normally validate the form and submit to backend
+    console.log('Driver Induction Data:', formData);
     
+    setIsSubmitted(true);
     toast({
-      title: "Driver Profile Submitted Successfully!",
-      description: "The driver induction form has been submitted for review.",
+      title: "Success!",
+      description: "Driver induction form submitted successfully. Data will be synced to the pilots database.",
     });
+
+    // Reset form after 3 seconds
+    setTimeout(() => {
+      setIsSubmitted(false);
+      setFormData(initialData);
+    }, 3000);
   };
+
+  if (isSubmitted) {
+    return (
+      <PageLayout 
+        title="📋 Driver Induction" 
+        subtitle="Enter and manage full driver profiles"
+      >
+        <div className="max-w-4xl mx-auto">
+          <Card className="text-center">
+            <CardContent className="pt-12 pb-12">
+              <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-green-800 mb-2">
+                Driver Induction Completed!
+              </h2>
+              <p className="text-gray-600 mb-6">
+                All driver information has been successfully recorded and will be synced to the pilots database.
+              </p>
+              <Button onClick={() => setIsSubmitted(false)} className="mr-4">
+                Add Another Driver
+              </Button>
+              <Button onClick={() => navigate('/')} variant="outline">
+                Back to Dashboard
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </PageLayout>
+    );
+  }
 
   return (
     <PageLayout 
       title="📋 Driver Induction" 
-      subtitle="Complete driver profile registration and documentation"
+      subtitle="Enter and manage full driver profiles"
     >
       <div className="max-w-4xl mx-auto space-y-6">
-        <Card className="border-blue-200 bg-blue-50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-blue-800">
-              <CheckCircle className="w-5 h-5" />
-              Driver Induction Form
-            </CardTitle>
+        <div className="flex justify-between items-center">
+          <Button onClick={() => navigate('/')} variant="outline" className="gap-2">
+            <ArrowLeft className="w-4 h-4" />
+            Back to Dashboard
+          </Button>
+          <div className="text-sm text-gray-600">
+            <span className="text-red-500">*</span> indicates required fields
+          </div>
+        </div>
+
+        <Card>
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl">Driver Induction Form</CardTitle>
+            <CardDescription>
+              Complete onboarding information for new drivers/pilots
+            </CardDescription>
           </CardHeader>
-          <CardContent>
-            <p className="text-blue-700">
-              Please complete all sections below. Fields marked with <span className="text-red-500">*</span> are required.
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-0">
+          <CardContent className="space-y-8">
             <PersonalInformationSection 
-              data={personalInfo} 
-              onChange={(data) => setPersonalInfo(prev => ({ ...prev, ...data }))} 
+              data={formData.personalInfo}
+              onChange={(data) => updateFormData('personalInfo', data)}
             />
+            
             <DrivingInformationSection 
-              data={drivingInfo} 
-              onChange={(data) => setDrivingInfo(prev => ({ ...prev, ...data }))} 
+              data={formData.drivingInfo}
+              onChange={(data) => updateFormData('drivingInfo', data)}
             />
+            
             <IdentityDocumentsSection 
-              data={identityDocs} 
-              onChange={(data) => setIdentityDocs(prev => ({ ...prev, ...data }))} 
+              data={formData.identityDocs}
+              onChange={(data) => updateFormData('identityDocs', data)}
             />
+            
             <BankingDetailsSection 
-              data={bankingDetails} 
-              onChange={(data) => setBankingDetails(prev => ({ ...prev, ...data }))} 
+              data={formData.bankingDetails}
+              onChange={(data) => updateFormData('bankingDetails', data)}
             />
+            
             <AddressDetailsSection 
-              data={addressDetails} 
-              onChange={(data) => setAddressDetails(prev => ({ ...prev, ...data }))} 
+              data={formData.addressDetails}
+              onChange={(data) => updateFormData('addressDetails', data)}
             />
+            
             <PVCInformationSection 
-              data={pvcInfo} 
-              onChange={(data) => setPvcInfo(prev => ({ ...prev, ...data }))} 
+              data={formData.pvcInfo}
+              onChange={(data) => updateFormData('pvcInfo', data)}
             />
+            
             <FamilyEmergencySection 
-              data={familyEmergency} 
-              onChange={(data) => setFamilyEmergency(prev => ({ ...prev, ...data }))} 
+              data={formData.familyEmergency}
+              onChange={(data) => updateFormData('familyEmergency', data)}
             />
+            
             <MedicalInductionSection 
-              data={medicalInduction} 
-              onChange={(data) => setMedicalInduction(prev => ({ ...prev, ...data }))} 
+              data={formData.medicalInduction}
+              onChange={(data) => updateFormData('medicalInduction', data)}
             />
-          </CardContent>
-        </Card>
 
-        <Card>
-          <CardContent className="pt-6">
-            <Button onClick={handleSubmit} className="w-full" size="lg">
-              <Save className="w-4 h-4 mr-2" />
-              Submit Driver Profile
-            </Button>
+            <div className="flex justify-center pt-6 border-t">
+              <Button onClick={handleSubmit} className="gap-2 bg-green-600 hover:bg-green-700 px-8 py-3 text-lg">
+                <Save className="w-5 h-5" />
+                Save / Submit Driver Information
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
