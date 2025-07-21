@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Camera, Keyboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useCamera } from '../hooks/useCamera';
+import { useCamera } from '../../../hooks/useCamera';
 
 interface VehicleScannerProps {
   onVehicleDetected: (vehicleNumber: string) => void;

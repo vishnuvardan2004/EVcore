@@ -1,8 +1,8 @@
 import React from 'react';
-// Update the import path below to the correct location of PageLayout, for example:
 import { PageLayout } from '../../../components/PageLayout';
-// Or, if PageLayout is not created yet, create the file at the expected path.
 import { VehicleDeploymentForm } from '../components/VehicleDeploymentForm';
+import { RecentVehicleActivities } from '../components/RecentVehicleActivities';
+import { LiveDeploymentStatus } from '../components/LiveDeploymentStatus';
 
 const VehicleTracker = () => {
   return (
@@ -10,7 +10,16 @@ const VehicleTracker = () => {
       title="🚗 Vehicle Deployment Tracker" 
       subtitle="Track vehicle IN/OUT operations"
     >
-      <VehicleDeploymentForm />
+      <div className="space-y-6">
+        {/* Main deployment form */}
+        <VehicleDeploymentForm />
+        
+        {/* Two-column grid for Recent Activities and Live Status */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <RecentVehicleActivities />
+          <LiveDeploymentStatus />
+        </div>
+      </div>
     </PageLayout>
   );
 };
