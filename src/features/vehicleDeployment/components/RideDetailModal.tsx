@@ -3,11 +3,11 @@ import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import { FileText } from 'lucide-react';
-import { Deployment } from '../types/vehicle';
-import { TripOverviewCard } from '../features/vehicleDeployment/components/TripOverviewCard';
+import { Deployment } from '../../../types/vehicle';
+import { TripOverviewCard } from './TripOverviewCard';
 import { OutDataCard } from './OutDataCard';
 import { InDataCard } from './InDataCard';
-import { ChecklistMismatchesCard } from '../features/vehicleDeployment/components/ChecklistMismatchesCard';
+import { ChecklistMismatchesCard } from './ChecklistMismatchesCard';
 import { ExportActions } from './ExportActions';
 
 interface RideDetailModalProps {

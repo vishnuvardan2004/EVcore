@@ -2,6 +2,10 @@ import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import VehicleTracker from './features/vehicleDeployment/pages/VehicleTracker';
+import RideHistory from './features/vehicleDeployment/pages/RideHistory';
+import LiveStatus from './features/vehicleDeployment/pages/LiveStatus';
+import Alerts from './features/vehicleDeployment/pages/Alerts';
+import Reports from './features/vehicleDeployment/pages/Reports';
 import { ChargingTracker, ChargingHistory, ChargingSummary } from './features/vehicleChargingTracker';
 import { DriverInduction } from './features/driverInduction';
 import { TripDetails } from './features/driverTripDetails';
@@ -40,6 +44,10 @@ const AppContent = () => {
             <Route path="/language" element={<LanguageSelector />} />
             <Route path="/audit-logs" element={<AuditLogs />} />
             <Route path="/vehicle-tracker" element={<VehicleTracker />} />
+            <Route path="/ride-history" element={<RideHistory />} />
+            <Route path="/live-status" element={<LiveStatus />} />
+            <Route path="/deployment-alerts" element={<Alerts />} />
+            <Route path="/deployment-reports" element={<Reports />} />
             <Route path="/charging-tracker" element={<ChargingTracker />} />
             <Route path="/charging-history" element={<ChargingHistory />} />
             <Route path="/charging-summary" element={<ChargingSummary />} />

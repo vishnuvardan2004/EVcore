@@ -1,16 +1,11 @@
 
 import React, { useState } from 'react';
-import { PageLayout } from '../../../components/PageLayout';
+import { VehicleTrackerLayout } from '../components/VehicleTrackerLayout';
 import { Deployment } from '../../../types/vehicle';
-// import { RideDetailModal } from '../../../components/RideDetailModal';
-// Update the import path below if RideDetailModal is located elsewhere:
 import { RideDetailModal } from '../components/RideDetailModal';
-// Or create RideDetailModal.tsx in ../components if it doesn't exist.
 import { ExportDialog } from '../../../components/ExportDialog';
 import { RideHistoryFilters } from '../components/RideHistoryFilters';
-// Update the import path if RideHistoryTable is located elsewhere, for example:
 import { RideHistoryTable } from '../components/RideHistoryTable';
-// Or create RideHistoryTable.tsx in ../../../components if it doesn't exist.
 import { useRideHistoryData } from '../hooks/useRideHistoryData';
 import { useRideHistoryFilters } from '../hooks/useRideHistoryFilters';
 
@@ -43,7 +38,7 @@ const RideHistory = () => {
   };
 
   return (
-    <PageLayout 
+    <VehicleTrackerLayout 
       title="📋 Ride History & Export Report" 
       subtitle="Search, view, and export historical vehicle deployment records"
     >
@@ -82,7 +77,7 @@ const RideHistory = () => {
           />
         )}
       </div>
-    </PageLayout>
+    </VehicleTrackerLayout>
   );
 };
 

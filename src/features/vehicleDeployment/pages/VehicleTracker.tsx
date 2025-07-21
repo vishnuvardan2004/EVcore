@@ -1,12 +1,12 @@
 import React from 'react';
-import { PageLayout } from '../../../components/PageLayout';
+import { VehicleTrackerLayout } from '../components/VehicleTrackerLayout';
 import { VehicleDeploymentForm } from '../components/VehicleDeploymentForm';
 import { RecentVehicleActivities } from '../components/RecentVehicleActivities';
 import { LiveDeploymentStatus } from '../components/LiveDeploymentStatus';
 
 const VehicleTracker = () => {
   return (
-    <PageLayout 
+    <VehicleTrackerLayout 
       title="🚗 Vehicle Deployment Tracker" 
       subtitle="Track vehicle IN/OUT operations"
     >
@@ -20,7 +20,7 @@ const VehicleTracker = () => {
           <LiveDeploymentStatus />
         </div>
       </div>
-    </PageLayout>
+    </VehicleTrackerLayout>
   );
 };
 

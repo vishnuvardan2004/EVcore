@@ -1,30 +1,131 @@
 import React from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { 
+  Car, 
+  History, 
+  Activity, 
+  BarChart3,
+  Users,
+  Home,
+  ChevronLeft,
+  ChevronRight
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface SidebarProps {
   collapsed: boolean;
 }
 
+const menuItems = [
+  {
+    title: 'Vehicle Tracker',
+    url: '/vehicle-tracker',
+    icon: Car,
+    description: 'Start deployment process'
+  },
+  {
+    title: 'Ride History',
+    url: '/ride-history',
+    icon: History,
+    description: 'View past deployments'
+  },
+  {
+    title: 'Live Status',
+    url: '/live-status',
+    icon: Activity,
+    description: 'Current deployments'
+  },
+  {
+    title: 'Reports',
+    url: '/deployment-reports',
+    icon: BarChart3,
+    description: 'Analytics & insights'
+  },
+  {
+    title: 'Alerts',
+    url: '/deployment-alerts',
+    icon: Users,
+    description: 'Notifications & warnings'
+  },
+  {
+    title: 'Back to Dashboard',
+    url: '/',
+    icon: Home,
+    description: 'Return to main dashboard'
+  }
+];
+
 export const VehicleDeploymentSidebar: React.FC<SidebarProps> = ({ collapsed }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleNavigation = (url: string) => {
+    navigate(url);
+  };
+
   return (
-    <aside className={`bg-white border-r p-4 transition-all duration-300 ${collapsed ? 'w-16' : 'w-64'}`}>
-      {!collapsed && (
-        <>
-          <h3 className="font-bold mb-4 text-lg">Vehicle Deployment</h3>
-          <nav>
-            <ul className="space-y-2">
-              <li>
-                <a href="#deploy" className="block py-2 px-3 rounded hover:bg-gray-100">Deploy Vehicle</a>
+    <aside className={`bg-white border-r border-gray-200 shadow-sm transition-all duration-300 ${collapsed ? 'w-16' : 'w-64'} flex flex-col h-full`}>
+      {/* Header */}
+      <div className="p-4 border-b border-gray-200">
+        {!collapsed && (
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <Car className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h3 className="font-bold text-lg text-gray-900">Vehicle Deployment</h3>
+              <p className="text-xs text-gray-500">Fleet Management</p>
+            </div>
+          </div>
+        )}
+        {collapsed && (
+          <div className="flex justify-center">
+            <Car className="w-6 h-6 text-blue-600" />
+          </div>
+        )}
+      </div>
+
+      {/* Navigation Menu */}
+      <nav className="flex-1 p-2">
+        <ul className="space-y-1">
+          {menuItems.map((item) => {
+            const isActive = location.pathname === item.url;
+            return (
+              <li key={item.title}>
+                <Button
+                  variant="ghost"
+                  onClick={() => handleNavigation(item.url)}
+                  className={`w-full justify-start gap-3 h-auto p-3 transition-all ${
+                    isActive 
+                      ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                  } ${collapsed ? 'px-2 justify-center' : ''}`}
+                  title={collapsed ? item.title : undefined}
+                >
+                  <item.icon className={`${collapsed ? 'w-5 h-5' : 'w-5 h-5'} shrink-0`} />
+                  {!collapsed && (
+                    <div className="text-left flex-1">
+                      <div className="font-medium text-sm">{item.title}</div>
+                      <div className="text-xs opacity-70">{item.description}</div>
+                    </div>
+                  )}
+                </Button>
               </li>
-              <li>
-                <a href="#history" className="block py-2 px-3 rounded hover:bg-gray-100">Deployment History</a>
-              </li>
-              <li>
-                <a href="#status" className="block py-2 px-3 rounded hover:bg-gray-100">Current Status</a>
-              </li>
-            </ul>
-          </nav>
-        </>
-      )}
+            );
+          })}
+        </ul>
+      </nav>
+
+      {/* Footer */}
+      <div className="p-4 border-t border-gray-200">
+        {!collapsed && (
+          <div className="text-center">
+            <p className="text-xs text-gray-500">
+              Vehicle Deployment v2.0
+            </p>
+          </div>
+        )}
+      </div>
     </aside>
   );
 };

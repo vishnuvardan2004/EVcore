@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { PageLayout } from '../../../components/PageLayout';
+import { VehicleTrackerLayout } from '../components/VehicleTrackerLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -44,7 +44,7 @@ const LiveStatus = () => {
   };
 
   return (
-    <PageLayout 
+    <VehicleTrackerLayout 
       title="🟢 Live Deployment Status" 
       subtitle="Real-time tracking of currently deployed vehicles"
     >
@@ -113,7 +113,7 @@ const LiveStatus = () => {
           </Card>
         )}
       </div>
-    </PageLayout>
+    </VehicleTrackerLayout>
   );
 };
 

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { PageLayout } from '../../../components/PageLayout';
+import { VehicleTrackerLayout } from '../components/VehicleTrackerLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -71,7 +71,7 @@ const Alerts = () => {
   };
 
   return (
-    <PageLayout 
+    <VehicleTrackerLayout 
       title="⚠️ Alerts & Mismatches" 
       subtitle="Monitor checklist discrepancies and deployment issues"
     >
@@ -172,7 +172,7 @@ const Alerts = () => {
           </Card>
         )}
       </div>
-    </PageLayout>
+    </VehicleTrackerLayout>
   );
 };
 
