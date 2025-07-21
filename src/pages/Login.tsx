@@ -45,7 +45,7 @@ const Login = () => {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-4 mb-6">
             <div className="w-16 h-16 bg-accent rounded-2xl flex items-center justify-center shadow-lg">
-              <span className="text-2xl font-bold text-accent-foreground">E</span>
+              <span className="text-2xl font-bold text-accent-foreground"><img src="favicon.ico" alt="" /></span>
             </div>
             <div className="text-left">
               <h1 className="text-3xl font-bold text-foreground">EVZIP</h1>

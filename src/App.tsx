@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+// EVCORE Platform - Main Application Entry Point
 import Dashboard from './pages/Dashboard';
 import Database from './pages/Database';
 import VehicleTracker from './features/vehicleDeployment/pages/VehicleTracker';
