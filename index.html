@@ -17,14 +17,3 @@
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-
-export default defineConfig({
-  plugins: [react()],
-  build: {
-    rollupOptions: {
-      input: {
-        main: './index.html',
-      },
-    },
-  },
-});

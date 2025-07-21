@@ -40,7 +40,7 @@ const AppContent = () => {
 
   // Show main application if authenticated
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={false}>
       <div className="min-h-screen flex w-full">
         <NavigationSidebar />
         <MainLayout>
