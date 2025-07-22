@@ -17,41 +17,37 @@ export const DatabaseLayout: React.FC<DatabaseLayoutProps> = ({
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Mobile sidebar overlay */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      {/* Sidebar */}
+    <div className="relative h-full bg-gray-50 flex">
+      {/* Database Sidebar */}
       <div className={`
-        fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        relative transform transition-all duration-300 ease-in-out bg-white border-r border-gray-200
+        ${sidebarOpen ? 'w-64' : 'w-0'}
+        overflow-hidden
       `}>
         <DatabaseNavigationSidebar />
       </div>
 
-      {/* Main content */}
-      <div className="lg:pl-64">
-        {/* Header */}
-        <header className="bg-white border-b border-gray-200 px-4 py-4 lg:px-6">
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Header with Hamburger */}
+        <header className="bg-white border-b border-gray-200 px-4 py-4 lg:px-6 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              {/* Mobile menu button */}
+              {/* Database Hamburger Button */}
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
-                className="lg:hidden"
                 onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="flex items-center gap-2 bg-white shadow-sm border border-gray-200 hover:bg-gray-50"
               >
                 {sidebarOpen ? (
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4" />
                 ) : (
-                  <Menu className="w-5 h-5" />
+                  <Menu className="w-4 h-4" />
                 )}
+                <span className="hidden sm:inline text-xs">
+                  {sidebarOpen ? 'Hide Menu' : ''}
+                </span>
               </Button>
               
               <div>
@@ -64,8 +60,8 @@ export const DatabaseLayout: React.FC<DatabaseLayoutProps> = ({
           </div>
         </header>
 
-        {/* Page content */}
-        <main className="p-4 lg:p-6">
+        {/* Page Content */}
+        <main className="flex-1 p-4 lg:p-6 overflow-auto">
           {children}
         </main>
       </div>

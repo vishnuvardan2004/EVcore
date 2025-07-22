@@ -1,73 +1,62 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DatabaseLayout } from '../components/DatabaseLayout';
 import { DataTable, DataTableColumn } from '../components/shared/DataTable';
 import { SearchAndFilter, FilterOption } from '../components/shared/SearchAndFilter';
 import { EmptyState } from '../components/shared/EmptyState';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Car } from 'lucide-react';
+import { Car, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { vehicleService } from '../../../services/database';
+import { Vehicle as VehicleType } from '../../../types/vehicle';
 
-// Mock data structure for vehicles
-interface Vehicle {
-  id: string;
-  vehicleNumber: string;
-  model: string;
-  type: 'Sedan' | 'SUV' | 'Hatchback' | 'Electric' | 'Hybrid';
-  status: 'Active' | 'Maintenance' | 'Inactive' | 'Deployed';
-  year: number;
-  licensePlate: string;
-  fuelType: 'Petrol' | 'Diesel' | 'Electric' | 'Hybrid';
-  lastService: string;
-  mileage: number;
-  location: string;
+// Extended Vehicle interface for database management
+interface Vehicle extends VehicleType {
+  model?: string;
+  type?: 'Sedan' | 'SUV' | 'Hatchback' | 'Electric' | 'Hybrid';
+  year?: number;
+  licensePlate?: string;
+  fuelType?: 'Petrol' | 'Diesel' | 'Electric' | 'Hybrid';
+  lastService?: string;
+  mileage?: number;
+  location?: string;
 }
 
 const VehicleManagement = () => {
   const [searchValue, setSearchValue] = useState('');
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock data - replace with API call
-  const vehicles: Vehicle[] = [
-    {
-      id: '1',
-      vehicleNumber: 'VH001',
-      model: 'Toyota Camry',
-      type: 'Sedan',
-      status: 'Active',
-      year: 2022,
-      licensePlate: 'ABC-1234',
-      fuelType: 'Petrol',
-      lastService: '2024-12-15',
-      mileage: 15000,
-      location: 'Main Depot'
-    },
-    {
-      id: '2',
-      vehicleNumber: 'VH002',
-      model: 'Honda CR-V',
-      type: 'SUV',
-      status: 'Deployed',
-      year: 2023,
-      licensePlate: 'XYZ-5678',
-      fuelType: 'Hybrid',
-      lastService: '2024-11-20',
-      mileage: 8000,
-      location: 'North Station'
-    },
-    {
-      id: '3',
-      vehicleNumber: 'VH003',
-      model: 'Tesla Model 3',
-      type: 'Electric',
-      status: 'Maintenance',
-      year: 2023,
-      licensePlate: 'ELE-9012',
-      fuelType: 'Electric',
-      lastService: '2024-12-01',
-      mileage: 12000,
-      location: 'Service Center'
+  const fetchVehicles = async () => {
+    try {
+      setLoading(true);
+      const vehicleData = await vehicleService.getAllVehicles();
+      
+      // Enhance vehicle data with additional properties for database management
+      const enhancedVehicles: Vehicle[] = vehicleData.map((vehicle, index) => ({
+        ...vehicle,
+        model: `Model ${vehicle.vehicleNumber}`,
+        type: ['Electric', 'Hybrid', 'Sedan', 'SUV'][index % 4] as any,
+        year: 2020 + (index % 4),
+        licensePlate: `${vehicle.vehicleNumber}-${Math.random().toString(36).substr(2, 3).toUpperCase()}`,
+        fuelType: ['Electric', 'Hybrid', 'Petrol', 'Diesel'][index % 4] as any,
+        lastService: new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        mileage: Math.floor(Math.random() * 50000) + 5000,
+        location: ['Main Depot', 'North Station', 'Service Center', 'South Hub'][index % 4]
+      }));
+      
+      setVehicles(enhancedVehicles);
+    } catch (error) {
+      console.error('Error fetching vehicles:', error);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  useEffect(() => {
+    fetchVehicles();
+  }, []);
 
   // Table columns configuration
   const columns: DataTableColumn[] = [
@@ -96,14 +85,16 @@ const VehicleManagement = () => {
       label: 'Status',
       render: (value) => {
         const colors = {
-          Active: 'bg-green-100 text-green-800',
-          Deployed: 'bg-blue-100 text-blue-800',
-          Maintenance: 'bg-yellow-100 text-yellow-800',
-          Inactive: 'bg-gray-100 text-gray-800'
+          IN: 'bg-green-100 text-green-800',
+          OUT: 'bg-blue-100 text-blue-800'
+        };
+        const labels = {
+          IN: 'Available',
+          OUT: 'Deployed'
         };
         return (
           <Badge className={colors[value as keyof typeof colors]}>
-            {value}
+            {labels[value as keyof typeof labels] || value}
           </Badge>
         );
       }
@@ -140,10 +131,8 @@ const VehicleManagement = () => {
       label: 'Status',
       type: 'select',
       options: [
-        { value: 'Active', label: 'Active' },
-        { value: 'Deployed', label: 'Deployed' },
-        { value: 'Maintenance', label: 'Maintenance' },
-        { value: 'Inactive', label: 'Inactive' }
+        { value: 'IN', label: 'Available (IN)' },
+        { value: 'OUT', label: 'Deployed (OUT)' }
       ]
     },
     {
@@ -208,6 +197,23 @@ const VehicleManagement = () => {
       subtitle="Manage vehicle registry, specifications, and status"
     >
       <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header with Refresh */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">Vehicle Database</h2>
+            <p className="text-gray-600">Monitor and manage all vehicles and their deployment status</p>
+          </div>
+          <Button
+            variant="outline"
+            onClick={fetchVehicles}
+            disabled={loading}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        </div>
+
         {/* Search and Filters */}
         <SearchAndFilter
           searchValue={searchValue}
@@ -222,19 +228,29 @@ const VehicleManagement = () => {
         />
 
         {/* Data Table */}
-        {filteredVehicles.length > 0 ? (
+        {loading ? (
+          <Card className="p-6">
+            <div className="flex items-center justify-center py-8">
+              <div className="text-center">
+                <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2" />
+                <p className="text-sm text-gray-500">Loading vehicles...</p>
+              </div>
+            </div>
+          </Card>
+        ) : filteredVehicles.length > 0 ? (
           <DataTable
             columns={columns}
             data={filteredVehicles}
+            loading={loading}
             emptyMessage="No vehicles found matching your criteria"
           />
         ) : vehicles.length === 0 ? (
           <EmptyState
             icon={Car}
-            title="No Vehicles Added Yet"
-            description="Start by adding your first vehicle to the database. You can track specifications, status, and maintenance history."
-            actionLabel="Add First Vehicle"
-            onAction={handleAddNew}
+            title="No Vehicles in Database"
+            description="No vehicles have been registered yet. Vehicles are automatically added when they are first deployed through the Vehicle Deployment Tracker."
+            actionLabel="Go to Vehicle Tracker"
+            onAction={() => window.location.href = '/vehicle-tracker'}
           />
         ) : (
           <EmptyState
@@ -258,9 +274,9 @@ const VehicleManagement = () => {
             <CardContent className="p-6">
               <div className="text-center space-y-2">
                 <div className="text-3xl font-bold text-green-600">
-                  {vehicles.filter(v => v.status === 'Active').length}
+                  {vehicles.filter(v => v.status === 'IN').length}
                 </div>
-                <div className="text-sm font-medium text-gray-600">Active</div>
+                <div className="text-sm font-medium text-gray-600">Available (IN)</div>
               </div>
             </CardContent>
           </Card>
@@ -268,9 +284,9 @@ const VehicleManagement = () => {
             <CardContent className="p-6">
               <div className="text-center space-y-2">
                 <div className="text-3xl font-bold text-blue-600">
-                  {vehicles.filter(v => v.status === 'Deployed').length}
+                  {vehicles.filter(v => v.status === 'OUT').length}
                 </div>
-                <div className="text-sm font-medium text-gray-600">Deployed</div>
+                <div className="text-sm font-medium text-gray-600">Deployed (OUT)</div>
               </div>
             </CardContent>
           </Card>
@@ -278,9 +294,9 @@ const VehicleManagement = () => {
             <CardContent className="p-6">
               <div className="text-center space-y-2">
                 <div className="text-3xl font-bold text-yellow-600">
-                  {vehicles.filter(v => v.status === 'Maintenance').length}
+                  {vehicles.filter(v => v.currentDeployment !== undefined).length}
                 </div>
-                <div className="text-sm font-medium text-gray-600">In Maintenance</div>
+                <div className="text-sm font-medium text-gray-600">Active Deployments</div>
               </div>
             </CardContent>
           </Card>

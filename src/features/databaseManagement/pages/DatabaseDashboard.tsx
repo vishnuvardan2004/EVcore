@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { DatabaseLayout } from '../components/DatabaseLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,45 +10,66 @@ import {
   Building2, 
   Database,
   TrendingUp,
-  ArrowRight
+  ArrowRight,
+  RefreshCw
 } from 'lucide-react';
+import { vehicleService } from '../../../services/database';
+import { Vehicle } from '../../../types/vehicle';
 
 const DatabaseDashboard = () => {
   const navigate = useNavigate();
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock data for dashboard stats
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      const vehicleData = await vehicleService.getAllVehicles();
+      setVehicles(vehicleData);
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  // Calculate real stats from vehicle data
   const stats = [
     {
       label: 'Total Vehicles',
-      value: '156',
-      change: '+12 this month',
+      value: loading ? '...' : vehicles.length.toString(),
+      change: '+Real data',
       icon: Car,
       color: 'blue',
       href: '/database/vehicles'
     },
     {
-      label: 'Active Pilots',
-      value: '89',
-      change: '+5 this month',
+      label: 'Available Vehicles',
+      value: loading ? '...' : vehicles.filter(v => v.status === 'IN').length.toString(),
+      change: 'Ready for deployment',
       icon: UserCheck,
       color: 'green',
-      href: '/database/pilots'
+      href: '/database/vehicles'
     },
     {
-      label: 'Customers',
-      value: '2,347',
-      change: '+89 this month',
+      label: 'Deployed Vehicles',
+      value: loading ? '...' : vehicles.filter(v => v.status === 'OUT').length.toString(),
+      change: 'Currently active',
       icon: Users,
       color: 'purple',
-      href: '/database/customers'
+      href: '/database/vehicles'
     },
     {
-      label: 'Staff Members',
-      value: '67',
-      change: '+3 this month',
+      label: 'Active Deployments',
+      value: loading ? '...' : vehicles.filter(v => v.currentDeployment).length.toString(),
+      change: 'With deployment data',
       icon: Building2,
       color: 'orange',
-      href: '/database/staff'
+      href: '/database/vehicles'
     }
   ];
 
@@ -105,13 +126,24 @@ const DatabaseDashboard = () => {
             <h2 className="text-2xl font-bold text-gray-900">Database Management</h2>
             <p className="text-gray-600">Monitor and manage all organizational data</p>
           </div>
-          <Button 
-            onClick={() => navigate('/database/analytics')}
-            className="gap-2"
-          >
-            <TrendingUp className="w-4 h-4" />
-            View Analytics
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline"
+              onClick={fetchDashboardData}
+              disabled={loading}
+              className="gap-2"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+            <Button 
+              onClick={() => navigate('/database/analytics')}
+              className="gap-2"
+            >
+              <TrendingUp className="w-4 h-4" />
+              View Analytics
+            </Button>
+          </div>
         </div>
 
         {/* Stats Grid */}
@@ -183,26 +215,45 @@ const DatabaseDashboard = () => {
         <Card>
           <CardHeader>
             <CardTitle>Recent Database Activity</CardTitle>
-            <CardDescription>Latest changes and additions to the database</CardDescription>
+            <CardDescription>Latest vehicle deployment activities</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {[
-                { action: 'Added new vehicle', item: 'VH-157', time: '2 hours ago', type: 'vehicle' },
-                { action: 'Updated pilot certification', item: 'John Smith', time: '4 hours ago', type: 'pilot' },
-                { action: 'New customer registered', item: 'Acme Corp', time: '6 hours ago', type: 'customer' },
-                { action: 'Staff member promoted', item: 'Sarah Johnson', time: '1 day ago', type: 'staff' }
-              ].map((activity, index) => (
-                <div key={index} className="flex items-center justify-between py-2">
-                  <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <span className="text-sm text-gray-900">{activity.action}</span>
-                    <span className="text-sm font-medium text-gray-700">{activity.item}</span>
+            {loading ? (
+              <div className="flex items-center justify-center py-8">
+                <RefreshCw className="w-6 h-6 animate-spin" />
+                <span className="ml-2 text-gray-500">Loading activities...</span>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {vehicles.slice(0, 4).map((vehicle, index) => (
+                  <div key={vehicle.id} className="flex items-center justify-between py-2">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-2 h-2 rounded-full ${
+                        vehicle.status === 'OUT' ? 'bg-blue-500' : 'bg-green-500'
+                      }`}></div>
+                      <span className="text-sm text-gray-900">
+                        Vehicle {vehicle.status === 'OUT' ? 'deployed' : 'returned'}
+                      </span>
+                      <span className="text-sm font-medium text-gray-700">{vehicle.vehicleNumber}</span>
+                      {vehicle.currentDeployment && (
+                        <span className="text-xs text-gray-500">({vehicle.currentDeployment.purpose})</span>
+                      )}
+                    </div>
+                    <span className="text-xs text-gray-500">
+                      {vehicle.currentDeployment?.outTimestamp ? 
+                        new Date(vehicle.currentDeployment.outTimestamp).toLocaleDateString() : 
+                        'Recently'
+                      }
+                    </span>
                   </div>
-                  <span className="text-xs text-gray-500">{activity.time}</span>
-                </div>
-              ))}
-            </div>
+                ))}
+                {vehicles.length === 0 && (
+                  <div className="text-center py-4 text-gray-500">
+                    No recent activities. Start deploying vehicles to see activity here.
+                  </div>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
