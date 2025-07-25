@@ -4,7 +4,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Camera } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Camera, User, X, CheckCircle } from 'lucide-react';
 import { ChecklistSection } from './ChecklistSection';
 import { DriverChecklist, VehicleChecklist } from '../../../types/vehicle';
 import { useCamera } from '../../../hooks/useCamera';
@@ -70,6 +71,12 @@ export const PilotForm: React.FC<PilotFormProps> = ({
   const [vehiclePhotos, setVehiclePhotos] = useState<string[]>([]);
   const [driverPhoto, setDriverPhoto] = useState<string>('');
   const [checklistMismatches, setChecklistMismatches] = useState<string[]>([]);
+  
+  // Supervisor selfie state
+  const [supervisorSelfie, setSupervisorSelfie] = useState<string>('');
+  const [isSupervisorSelfieDialogOpen, setIsSupervisorSelfieDialogOpen] = useState(false);
+  const [isSupervisorCameraActive, setIsSupervisorCameraActive] = useState(false);
+  const [supervisorStream, setSupervisorStream] = useState<MediaStream | null>(null);
 
   const { startCamera, capturedImage, resetCapture } = useCamera();
 
@@ -104,6 +111,62 @@ export const PilotForm: React.FC<PilotFormProps> = ({
       const mockPhoto = `data:image/jpeg;base64,mockVehiclePhoto${Date.now()}`;
       setVehiclePhotos(prev => [...prev, mockPhoto]);
     }, 2000);
+  };
+
+  // Supervisor selfie functions
+  const startSupervisorCamera = async () => {
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'user' } // Front camera for selfie
+      });
+      setSupervisorStream(mediaStream);
+      setIsSupervisorCameraActive(true);
+    } catch (error) {
+      console.error('Error accessing camera:', error);
+      alert('Unable to access camera. Please check permissions.');
+    }
+  };
+
+  const stopSupervisorCamera = () => {
+    if (supervisorStream) {
+      supervisorStream.getTracks().forEach(track => track.stop());
+      setSupervisorStream(null);
+    }
+    setIsSupervisorCameraActive(false);
+  };
+
+  const captureSupervisorSelfie = () => {
+    if (!supervisorStream) return;
+    
+    const video = document.getElementById('supervisor-camera-video') as HTMLVideoElement;
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    
+    if (video && context) {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      context.drawImage(video, 0, 0);
+      
+      const photoDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+      setSupervisorSelfie(photoDataUrl);
+      stopSupervisorCamera();
+      setIsSupervisorSelfieDialogOpen(false);
+    }
+  };
+
+  const openSupervisorSelfieDialog = () => {
+    setIsSupervisorSelfieDialogOpen(true);
+    startSupervisorCamera();
+  };
+
+  const closeSupervisorSelfieDialog = () => {
+    setIsSupervisorSelfieDialogOpen(false);
+    stopSupervisorCamera();
+  };
+
+  const removeSupervisorSelfie = () => {
+    setSupervisorSelfie('');
+    // Keep supervisor name intact - only remove the selfie
   };
 
   const detectMismatches = () => {
@@ -281,25 +344,128 @@ export const PilotForm: React.FC<PilotFormProps> = ({
                   </Button>
                 </div>
 
-                <div className="mt-4 space-y-2">
+                <div className="mt-4 space-y-4">
                   <Label htmlFor="supervisorName">Supervised By *</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="supervisorName"
-                      value={formData.supervisorName}
-                      onChange={(e) => handleInputChange('supervisorName', e.target.value)}
-                      placeholder="Enter supervisor name"
-                      required
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleScanSupervisor}
-                      className="px-3"
-                    >
-                      <Camera className="w-4 h-4" />
-                    </Button>
+                  <Input
+                    id="supervisorName"
+                    value={formData.supervisorName}
+                    onChange={(e) => handleInputChange('supervisorName', e.target.value)}
+                    placeholder="Enter supervisor name"
+                    required
+                  />
+                  
+                  {/* Dedicated Supervisor Selfie Section */}
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium text-gray-700">Supervisor Verification *</Label>
+                    
+                    {supervisorSelfie ? (
+                      // Selfie captured - show verification
+                      <div className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <img
+                          src={supervisorSelfie}
+                          alt="Supervisor selfie"
+                          className="w-16 h-16 rounded-full object-cover border-2 border-green-300"
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <CheckCircle className="w-5 h-5 text-green-600" />
+                            <p className="text-sm font-medium text-green-800">Supervisor Verified</p>
+                          </div>
+                          <p className="text-xs text-green-600">Live photo captured successfully</p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={removeSupervisorSelfie}
+                          className="text-red-600 hover:text-red-800"
+                          title="Remove selfie and retake"
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      // No selfie - show capture button
+                      <div className="space-y-3">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={openSupervisorSelfieDialog}
+                          className="w-full h-12 flex items-center justify-center gap-3 border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50"
+                        >
+                          <User className="w-6 h-6 text-gray-500" />
+                          <div className="text-left">
+                            <p className="text-sm font-medium text-gray-700">Take Supervisor Selfie</p>
+                            <p className="text-xs text-gray-500">Required for verification</p>
+                          </div>
+                        </Button>
+                        
+                        <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Camera className="w-4 h-4 text-yellow-600" />
+                            <p className="text-sm font-medium text-yellow-800">Live Photo Required</p>
+                          </div>
+                          <p className="text-xs text-yellow-600">
+                            The supervisor must take a live selfie to verify their identity. Gallery uploads are not allowed.
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
+                  
+                  {/* Supervisor Selfie Dialog */}
+                  <Dialog open={isSupervisorSelfieDialogOpen} onOpenChange={closeSupervisorSelfieDialog}>
+                    <DialogContent className="max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>Supervisor Verification</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                          <p className="text-sm text-blue-800 font-medium">⚠️ Live Photo Required</p>
+                          <p className="text-xs text-blue-600">Gallery uploads are not allowed. Supervisor must take a live selfie.</p>
+                        </div>
+                        
+                        {formData.supervisorName && (
+                          <div className="p-2 bg-gray-50 border border-gray-200 rounded-lg">
+                            <p className="text-sm text-gray-700">
+                              <span className="font-medium">Supervisor:</span> {formData.supervisorName}
+                            </p>
+                          </div>
+                        )}
+                        
+                        {isSupervisorCameraActive && supervisorStream ? (
+                          <div className="relative">
+                            <video
+                              id="supervisor-camera-video"
+                              autoPlay
+                              playsInline
+                              className="w-full rounded-lg"
+                              style={{ transform: 'scaleX(-1)' }} // Mirror effect for selfie
+                              ref={(video) => {
+                                if (video && supervisorStream) {
+                                  video.srcObject = supervisorStream;
+                                }
+                              }}
+                            />
+                            <div className="flex justify-center gap-2 mt-4">
+                              <Button onClick={captureSupervisorSelfie} className="flex items-center gap-2">
+                                <Camera className="w-4 h-4" />
+                                Capture Selfie
+                              </Button>
+                              <Button variant="outline" onClick={closeSupervisorSelfieDialog}>
+                                Cancel
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-center py-8">
+                            <User className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                            <p className="text-gray-500">Loading camera...</p>
+                          </div>
+                        )}
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </div>
 
                 <div className="mt-4 space-y-2">
@@ -367,25 +533,128 @@ export const PilotForm: React.FC<PilotFormProps> = ({
                     </Button>
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-4">
                     <Label htmlFor="inSupervisorName">IN Supervisor Name *</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        id="inSupervisorName"
-                        value={formData.supervisorName}
-                        onChange={(e) => handleInputChange('supervisorName', e.target.value)}
-                        placeholder="Enter supervisor name"
-                        required
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={handleScanSupervisor}
-                        className="px-3"
-                      >
-                        <Camera className="w-4 h-4" />
-                      </Button>
+                    <Input
+                      id="inSupervisorName"
+                      value={formData.supervisorName}
+                      onChange={(e) => handleInputChange('supervisorName', e.target.value)}
+                      placeholder="Enter supervisor name"
+                      required
+                    />
+                    
+                    {/* Dedicated Supervisor Selfie Section */}
+                    <div className="space-y-3">
+                      <Label className="text-sm font-medium text-gray-700">Supervisor Verification *</Label>
+                      
+                      {supervisorSelfie ? (
+                        // Selfie captured - show verification
+                        <div className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                          <img
+                            src={supervisorSelfie}
+                            alt="Supervisor selfie"
+                            className="w-16 h-16 rounded-full object-cover border-2 border-green-300"
+                          />
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <CheckCircle className="w-5 h-5 text-green-600" />
+                              <p className="text-sm font-medium text-green-800">Supervisor Verified</p>
+                            </div>
+                            <p className="text-xs text-green-600">Live photo captured successfully</p>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={removeSupervisorSelfie}
+                            className="text-red-600 hover:text-red-800"
+                            title="Remove selfie and retake"
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        // No selfie - show capture button
+                        <div className="space-y-3">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={openSupervisorSelfieDialog}
+                            className="w-full h-12 flex items-center justify-center gap-3 border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50"
+                          >
+                            <User className="w-6 h-6 text-gray-500" />
+                            <div className="text-left">
+                              <p className="text-sm font-medium text-gray-700">Take Supervisor Selfie</p>
+                              <p className="text-xs text-gray-500">Required for verification</p>
+                            </div>
+                          </Button>
+                          
+                          <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Camera className="w-4 h-4 text-yellow-600" />
+                              <p className="text-sm font-medium text-yellow-800">Live Photo Required</p>
+                            </div>
+                            <p className="text-xs text-yellow-600">
+                              The supervisor must take a live selfie to verify their identity. Gallery uploads are not allowed.
+                            </p>
+                          </div>
+                        </div>
+                      )}
                     </div>
+                    
+                    {/* Supervisor Selfie Dialog */}
+                    <Dialog open={isSupervisorSelfieDialogOpen} onOpenChange={closeSupervisorSelfieDialog}>
+                      <DialogContent className="max-w-md">
+                        <DialogHeader>
+                          <DialogTitle>Supervisor Verification</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                            <p className="text-sm text-blue-800 font-medium">⚠️ Live Photo Required</p>
+                            <p className="text-xs text-blue-600">Gallery uploads are not allowed. Supervisor must take a live selfie.</p>
+                          </div>
+                          
+                          {formData.supervisorName && (
+                            <div className="p-2 bg-gray-50 border border-gray-200 rounded-lg">
+                              <p className="text-sm text-gray-700">
+                                <span className="font-medium">Supervisor:</span> {formData.supervisorName}
+                              </p>
+                            </div>
+                          )}
+                          
+                          {isSupervisorCameraActive && supervisorStream ? (
+                            <div className="relative">
+                              <video
+                                id="supervisor-camera-video"
+                                autoPlay
+                                playsInline
+                                className="w-full rounded-lg"
+                                style={{ transform: 'scaleX(-1)' }} // Mirror effect for selfie
+                                ref={(video) => {
+                                  if (video && supervisorStream) {
+                                    video.srcObject = supervisorStream;
+                                  }
+                                }}
+                              />
+                              <div className="flex justify-center gap-2 mt-4">
+                                <Button onClick={captureSupervisorSelfie} className="flex items-center gap-2">
+                                  <Camera className="w-4 h-4" />
+                                  Capture Selfie
+                                </Button>
+                                <Button variant="outline" onClick={closeSupervisorSelfieDialog}>
+                                  Cancel
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="text-center py-8">
+                              <User className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                              <p className="text-gray-500">Loading camera...</p>
+                            </div>
+                          )}
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 </div>
               </Card>
@@ -436,14 +705,14 @@ export const PilotForm: React.FC<PilotFormProps> = ({
         case 2:
           return true; // Driver checklist is optional
         case 3:
-          return formData.odometer > 0 && formData.supervisorName;
+          return formData.odometer > 0 && formData.supervisorName && supervisorSelfie; // Require supervisor selfie
         default:
           return false;
       }
     } else {
       switch (currentStep) {
         case 1:
-          return formData.returnOdometer > 0 && formData.supervisorName;
+          return formData.returnOdometer > 0 && formData.supervisorName && supervisorSelfie; // Require supervisor selfie for IN
         case 2:
           return true; // Final review step
         default:
