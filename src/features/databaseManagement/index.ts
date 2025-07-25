@@ -1,20 +1,10 @@
-// Main pages exports
-export { default as DatabaseDashboard } from './pages/DatabaseDashboard';
-export { default as VehicleManagement } from './pages/VehicleManagement';
-export { default as PilotManagement } from './pages/PilotManagement';
-export { default as CustomerManagement } from './pages/CustomerManagement';
-export { default as StaffManagement } from './pages/StaffManagement';
-export { default as DataAnalytics } from './pages/DataAnalytics';
+// Database Management Feature - Main Export File
 
-// Layout components
 export { DatabaseLayout } from './components/DatabaseLayout';
-export { DatabaseNavigationSidebar } from './components/DatabaseNavigationSidebar';
+export { DatabaseDashboard } from './components/DatabaseDashboard';
+export { VehicleManagement } from './components/VehicleManagement';
+export { ChargingEquipmentManagement } from './components/ChargingEquipmentManagement';
+export { EmployeeManagement } from './components/EmployeeManagement';
 
-// Shared components
-export { DataTable } from './components/shared/DataTable';
-export { SearchAndFilter } from './components/shared/SearchAndFilter';
-export { EmptyState } from './components/shared/EmptyState';
-
-// Type exports for external use
-export type { DataTableColumn, DataTableAction } from './components/shared/DataTable';
-export type { FilterOption } from './components/shared/SearchAndFilter';
+export { databaseService } from './services/database';
+export type * from './types';
