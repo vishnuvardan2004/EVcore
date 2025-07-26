@@ -82,22 +82,30 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Hero Section */}
-        <div className="text-center mb-12">
-          <div className="flex items-center justify-center gap-4 mb-6">
-            <div className="w-16 h-16 bg-accent rounded-2xl flex items-center justify-center shadow-lg">
-              <span className="text-2xl font-bold text-accent-foreground"><img src="favicon.ico" alt="" /></span>
+        <div className="text-center mb-16">
+          <div className="flex items-center justify-center gap-6 mb-8">
+            <div className="relative">
+              <img src="/favicon.ico" alt="EVZIP Logo" className="w-20 h-20" />
+              <div className="absolute -top-1 -right-1 w-6 h-6 bg-accent rounded-full animate-pulse"></div>
             </div>
             <div className="text-left">
-              <h1 className="text-4xl font-bold text-foreground">EVZIP</h1>
-              <p className="text-lg text-muted-foreground font-medium">EVCORE Platform</p>
+              <h1 className="text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">
+                EVZIP
+              </h1>
+              <p className="text-xl text-accent font-bold tracking-wide">EVCORE Platform</p>
             </div>
           </div>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Streamline your electric vehicle operations with our comprehensive management platform
-          </p>
+          <div className="max-w-3xl mx-auto">
+            <p className="text-2xl text-primary/80 font-medium mb-4">
+              Streamline your electric vehicle operations
+            </p>
+            <p className="text-lg text-muted-foreground">
+              Comprehensive fleet management powered by sustainable technology
+            </p>
+          </div>
         </div>
 
         {/* Platform Cards Grid */}
@@ -105,45 +113,124 @@ const Dashboard = () => {
           {subPlatforms.map((platform) => (
             <Card 
               key={platform.id}
-              className={`evzip-card transition-all duration-300 hover:scale-105 cursor-pointer border-2 ${
+              className={`group relative overflow-hidden transition-all duration-500 hover:scale-[1.02] cursor-pointer border-0 shadow-lg hover:shadow-2xl ${
                 platform.isActive 
-                  ? 'hover:border-accent bg-card shadow-lg' 
-                  : 'bg-muted/30 opacity-75 cursor-not-allowed hover:scale-100'
+                  ? 'bg-white/80 backdrop-blur-sm hover:bg-white/90' 
+                  : 'bg-white/40 opacity-75 cursor-not-allowed hover:scale-100'
               }`}
               onClick={() => handleCardClick(platform)}
             >
-              <CardHeader className="text-center pb-4">
-                <div className="text-5xl mb-4">{platform.icon}</div>
-                <CardTitle className={`text-xl ${platform.isActive ? 'text-foreground' : 'text-muted-foreground'}`}>
+              {/* Gradient Background */}
+              <div className="absolute inset-0 bg-gradient-to-br from-accent/10 via-transparent to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              
+              {/* Electric Circuit Pattern */}
+              <div className="absolute top-0 right-0 w-24 h-24 opacity-5">
+                <svg viewBox="0 0 100 100" className="w-full h-full">
+                  <path d="M20,20 L80,20 L80,40 L60,40 L60,60 L80,60 L80,80" 
+                        stroke="currentColor" 
+                        strokeWidth="2" 
+                        fill="none" 
+                        className="text-accent"/>
+                </svg>
+              </div>
+
+              <CardHeader className="relative z-10 text-center pb-4">
+                <div className="relative mb-6">
+                  <div className={`text-6xl transition-transform duration-300 group-hover:scale-110 ${
+                    platform.isActive ? 'filter drop-shadow-lg' : 'grayscale'
+                  }`}>
+                    {platform.icon}
+                  </div>
+                  {platform.isActive && (
+                    <div className="absolute -top-2 -right-2 w-4 h-4 bg-accent rounded-full animate-pulse"></div>
+                  )}
+                </div>
+                <CardTitle className={`text-xl font-bold transition-colors duration-300 ${
+                  platform.isActive 
+                    ? 'text-primary group-hover:text-accent' 
+                    : 'text-muted-foreground'
+                }`}>
                   {platform.title}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="text-center">
-                <CardDescription className={`text-base mb-4 ${platform.isActive ? 'text-muted-foreground' : 'text-muted-foreground/70'}`}>
+              
+              <CardContent className="relative z-10 text-center pb-6">
+                <CardDescription className={`text-base mb-6 leading-relaxed ${
+                  platform.isActive 
+                    ? 'text-primary/70' 
+                    : 'text-muted-foreground/70'
+                }`}>
                   {platform.description}
                 </CardDescription>
+                
                 {platform.isActive ? (
-                  <Badge variant="secondary" className="bg-accent/10 text-accent border-accent/20 font-semibold">
-                    Active
-                  </Badge>
+                  <div className="flex items-center justify-center gap-2">
+                    <Badge className="bg-gradient-to-r from-accent to-accent/90 text-white border-0 font-bold px-4 py-1 shadow-lg">
+                      <div className="w-2 h-2 bg-white rounded-full mr-2 animate-pulse"></div>
+                      Active
+                    </Badge>
+                  </div>
                 ) : (
-                  <Badge variant="outline" className="bg-yellow-50 text-yellow-600 border-yellow-200 font-semibold">
+                  <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200 font-semibold">
                     Coming Soon
                   </Badge>
                 )}
               </CardContent>
+              
+              {/* Bottom accent line */}
+              {platform.isActive && (
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-accent via-accent/80 to-transparent"></div>
+              )}
             </Card>
           ))}
         </div>
 
         {/* Footer Info */}
-        <div className="mt-16 text-center">
-          <div className="bg-card rounded-2xl p-8 shadow-sm border border-border/50">
-            <h3 className="text-lg font-bold text-foreground mb-2">EVZIP EVCORE Platform</h3>
-            <p className="text-muted-foreground">
-              Powering sustainable transportation through intelligent fleet management
-            </p>
-            <div className="flex justify-center gap-4 mt-4 text-sm text-muted-foreground">
+        <div className="mt-20 text-center">
+          <div className="relative bg-white/60 backdrop-blur-sm rounded-3xl p-10 shadow-xl border border-accent/20 overflow-hidden">
+            {/* Background Pattern */}
+            <div className="absolute inset-0 opacity-5">
+              <div className="absolute top-0 left-0 w-full h-full">
+                <svg viewBox="0 0 400 200" className="w-full h-full">
+                  <defs>
+                    <pattern id="circuit" patternUnits="userSpaceOnUse" width="40" height="40">
+                      <path d="M0,20 L40,20 M20,0 L20,40" stroke="currentColor" strokeWidth="1" className="text-accent"/>
+                      <circle cx="20" cy="20" r="2" fill="currentColor" className="text-accent"/>
+                    </pattern>
+                  </defs>
+                  <rect width="100%" height="100%" fill="url(#circuit)"/>
+                </svg>
+              </div>
+            </div>
+            
+            <div className="relative z-10">
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <div className="w-8 h-8 bg-gradient-to-br from-accent to-accent/80 rounded-xl flex items-center justify-center">
+                  <span className="text-white font-bold">⚡</span>
+                </div>
+                <h3 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                  EVZIP EVCORE Platform
+                </h3>
+              </div>
+              <p className="text-lg text-primary/80 font-medium mb-6">
+                Powering sustainable transportation through intelligent fleet management
+              </p>
+              
+              {/* Feature Highlights */}
+              <div className="flex flex-wrap justify-center gap-6 text-sm">
+                <div className="flex items-center gap-2 text-primary/70">
+                  <div className="w-2 h-2 bg-accent rounded-full"></div>
+                  <span className="font-medium">Real-time Tracking</span>
+                </div>
+                <div className="flex items-center gap-2 text-primary/70">
+                  <div className="w-2 h-2 bg-accent rounded-full"></div>
+                  <span className="font-medium">Smart Analytics</span>
+                </div>
+                <div className="flex items-center gap-2 text-primary/70">
+                  <div className="w-2 h-2 bg-accent rounded-full"></div>
+                  <span className="font-medium">Sustainable Operations</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
