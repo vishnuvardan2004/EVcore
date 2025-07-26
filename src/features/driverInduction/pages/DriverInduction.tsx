@@ -14,6 +14,8 @@ import { PVCInformationSection } from '../components/PVCInformationSection';
 import { FamilyEmergencySection } from '../components/FamilyEmergencySection';
 import { MedicalInductionSection } from '../components/MedicalInductionSection';
 import { useToast } from '../../../hooks/use-toast';
+import { driverInductionService } from '../services/driverInductionService';
+import { PilotInductionData } from '../../../types/pilot';
 
 export interface DriverInductionData {
   personalInfo: {
@@ -148,21 +150,70 @@ const DriverInduction = () => {
     }));
   };
 
-  const handleSubmit = () => {
-    // Here you would normally validate the form and submit to backend
-    console.log('Driver Induction Data:', formData);
-    
-    setIsSubmitted(true);
-    toast({
-      title: "Success!",
-      description: "Driver induction form submitted successfully. Data will be synced to the pilots database.",
-    });
+  const handleSubmit = async () => {
+    try {
+      // Convert DriverInductionData to PilotInductionData format
+      const pilotData: PilotInductionData = {
+        personalInfo: formData.personalInfo,
+        drivingInfo: formData.drivingInfo,
+        identityDocs: formData.identityDocs,
+        bankingDetails: formData.bankingDetails,
+        addressDetails: {
+          presentAddress: formData.addressDetails.presentAddress,
+          presentAddressPhoto: formData.addressDetails.presentAddressPhoto,
+          permanentAddress: formData.addressDetails.permanentAddress,
+          permanentAddressPhoto: formData.addressDetails.permanentAddressProof
+        },
+        pvcInfo: {
+          pvcDetails: `Acknowledgement: ${formData.pvcInfo.acknowledgementDate?.toDateString() || 'N/A'}, Issue: ${formData.pvcInfo.issueDate?.toDateString() || 'N/A'}, Expiry: ${formData.pvcInfo.expiryDate?.toDateString() || 'N/A'}`,
+          pvcPhoto: formData.pvcInfo.pvcPhoto
+        },
+        familyEmergency: {
+          fatherName: formData.familyEmergency.parentName,
+          motherName: '', // Add this field to the form if needed
+          emergencyContactName: formData.familyEmergency.emergencyContactName,
+          emergencyContactNumber: formData.familyEmergency.emergencyContactNumber,
+          emergencyRelation: 'Emergency Contact'
+        },
+        medicalInfo: {
+          medicalCertificate: formData.medicalInduction.medicalTestReport,
+          bloodGroup: '', // Add this field to the form if needed
+          allergies: '', // Add this field to the form if needed
+          medications: '' // Add this field to the form if needed
+        }
+      };
 
-    // Reset form after 3 seconds
-    setTimeout(() => {
-      setIsSubmitted(false);
-      setFormData(initialData);
-    }, 3000);
+      // Submit to database with auto-generated EVZIP ID
+      const result = await driverInductionService.submitInduction(pilotData);
+      
+      if (result.success) {
+        setIsSubmitted(true);
+        toast({
+          title: "Success!",
+          description: `Pilot inducted successfully with ID: ${result.pilotId}. Data has been saved to the master database.`,
+        });
+
+        // Reset form after 3 seconds and redirect to database
+        setTimeout(() => {
+          setIsSubmitted(false);
+          setFormData(initialData);
+          navigate('/database/pilots'); // Redirect to pilot management
+        }, 3000);
+      } else {
+        toast({
+          title: "Error",
+          description: result.message,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error submitting driver induction:', error);
+      toast({
+        title: "Error",
+        description: "Failed to submit driver induction. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   if (isSubmitted) {

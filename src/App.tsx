@@ -12,10 +12,11 @@ import { DriverInduction } from './features/driverInduction';
 import { TripDetails } from './features/driverTripDetails';
 import { OfflineBookings } from './features/offlineBookings';
 import { DatabaseLayout } from './features/databaseManagement/components/DatabaseLayout';
-import { DatabaseDashboard } from './features/databaseManagement/components/DatabaseDashboard';
+import DatabaseDashboard from './features/databaseManagement/components/DatabaseDashboard';
 import { VehicleManagement } from './features/databaseManagement/components/VehicleManagement';
 import { ChargingEquipmentManagement } from './features/databaseManagement/components/ChargingEquipmentManagement';
 import { EmployeeManagement } from './features/databaseManagement/components/EmployeeManagement';
+import { PilotManagement } from './features/databaseManagement/components/PilotManagement';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './pages/Login';
 import { Toaster } from '@/components/ui/toaster';
@@ -65,6 +66,7 @@ const AppContent = () => {
               <Route path="vehicles" element={<VehicleManagement />} />
               <Route path="charging-equipment" element={<ChargingEquipmentManagement />} />
               <Route path="employees" element={<EmployeeManagement />} />
+              <Route path="pilots" element={<PilotManagement />} />
             </Route>
           </Routes>
         </MainLayout>

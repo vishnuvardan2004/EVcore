@@ -1,16 +1,19 @@
 
 import Dexie, { Table } from 'dexie';
 import { Vehicle, Deployment } from '../types/vehicle';
+import { Pilot } from '../types/pilot';
 
 export class VehicleDatabase extends Dexie {
   vehicles!: Table<Vehicle>;
   deployments!: Table<Deployment>;
+  pilots!: Table<Pilot>;
 
   constructor() {
     super('VehicleDatabase');
-    this.version(1).stores({
+    this.version(2).stores({
       vehicles: 'id, vehicleNumber, status',
-      deployments: 'id, vehicleNumber, direction, outTimestamp, inTimestamp'
+      deployments: 'id, vehicleNumber, direction, outTimestamp, inTimestamp',
+      pilots: 'id, personalInfo.fullName, personalInfo.mobileNumber, status, inductionDate'
     });
   }
 }
@@ -79,5 +82,63 @@ export const vehicleService = {
       return await db.deployments.where('vehicleNumber').equals(vehicleNumber).toArray();
     }
     return await db.deployments.toArray();
+  }
+};
+
+// Pilot ID Generation Utility
+export const generatePilotId = async (): Promise<string> => {
+  const pilots = await db.pilots.toArray();
+  const highestId = pilots.reduce((max, pilot) => {
+    const idNumber = parseInt(pilot.id.split('-')[1] || '0');
+    return Math.max(max, idNumber);
+  }, 0);
+  return `EVZIP-${highestId + 1}`;
+};
+
+// Pilot Service
+export const pilotService = {
+  async createPilot(pilotData: Omit<Pilot, 'id' | 'inductionDate' | 'status'>): Promise<string> {
+    const pilotId = await generatePilotId();
+    const newPilot: Pilot = {
+      ...pilotData,
+      id: pilotId,
+      inductionDate: new Date(),
+      status: 'active'
+    };
+    
+    await db.pilots.add(newPilot);
+    return pilotId;
+  },
+
+  async getPilot(id: string): Promise<Pilot | undefined> {
+    return await db.pilots.where('id').equals(id).first();
+  },
+
+  async getAllPilots(): Promise<Pilot[]> {
+    return await db.pilots.toArray();
+  },
+
+  async updatePilot(id: string, updates: Partial<Pilot>): Promise<void> {
+    await db.pilots.update(id, updates);
+  },
+
+  async deletePilot(id: string): Promise<void> {
+    await db.pilots.delete(id);
+  },
+
+  async getPilotCount(): Promise<number> {
+    return await db.pilots.count();
+  },
+
+  async getActivePilots(): Promise<Pilot[]> {
+    return await db.pilots.where('status').equals('active').toArray();
+  },
+
+  async searchPilots(searchTerm: string): Promise<Pilot[]> {
+    return await db.pilots.filter(pilot => 
+      pilot.personalInfo.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      pilot.personalInfo.mobileNumber.includes(searchTerm) ||
+      pilot.id.toLowerCase().includes(searchTerm.toLowerCase())
+    ).toArray();
   }
 };
