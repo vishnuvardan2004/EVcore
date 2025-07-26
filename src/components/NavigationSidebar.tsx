@@ -43,7 +43,10 @@ const menuItems = [
     url: "/global-reports",
     icon: FileText,
     description: "Platform reports"
-  },
+  }
+];
+
+const systemItems = [
   {
     title: "Admin Settings",
     url: "/admin-toggle",
@@ -78,29 +81,68 @@ export const NavigationSidebar: React.FC = () => {
     setOpenMobile(false);
   };
 
+  const isActive = (url: string) => {
+    if (url === '/') {
+      return location.pathname === '/';
+    }
+    return location.pathname.startsWith(url);
+  };
+
+  const renderMenuItem = (item: any) => (
+    <SidebarMenuItem key={item.title}>
+      <SidebarMenuButton 
+        asChild
+        isActive={isActive(item.url)}
+        className="mx-2 h-auto p-3"
+      >
+        <Link 
+          to={item.url}
+          onClick={handleLinkClick}
+          className={`flex items-center gap-3 w-full transition-all ${
+            isActive(item.url) 
+              ? 'bg-blue-600 text-white border border-blue-500 rounded-lg' 
+              : 'text-white hover:bg-gray-800 hover:text-blue-300 rounded-lg'
+          }`}
+        >
+          <item.icon className={`w-5 h-5 shrink-0 ${
+            isActive(item.url) ? 'text-white' : 'text-white'
+          }`} />
+          <div className="text-left flex-1">
+            <div className={`font-semibold text-sm ${
+              isActive(item.url) ? 'text-white' : 'text-white'
+            }`}>{item.title}</div>
+            <div className={`text-xs font-medium ${
+              isActive(item.url) ? 'text-blue-100' : 'text-gray-300'
+            }`}>{item.description}</div>
+          </div>
+        </Link>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
+
   return (
-    <Sidebar className="border-r border-sidebar-border bg-sidebar">
+    <Sidebar className="border-r border-gray-200 bg-gray-900 sidebar-no-scrollbar">
       <SidebarHeader>
-        <div className="px-4 py-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-sidebar-accent rounded-xl flex items-center justify-center">
-              <span className="text-xl font-bold text-sidebar-accent-foreground">E</span>
+        <div className="p-4 border-b border-gray-700">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
+              <span className="text-xl font-bold text-white">E</span>
             </div>
             <div>
-              <h2 className="text-xl font-bold text-sidebar-foreground">
+              <h2 className="text-xl font-bold text-white">
                 EVZIP
               </h2>
-              <p className="text-sm text-sidebar-foreground/70">
+              <p className="text-sm font-medium text-white">
                 EVCORE Platform
               </p>
             </div>
           </div>
           {user && (
-            <div className="bg-sidebar-accent/10 rounded-lg p-3">
-              <p className="text-sm font-medium text-sidebar-foreground">
+            <div className="bg-gray-800 rounded-lg p-3 mt-4">
+              <p className="text-sm font-bold text-white">
                 {user.role === 'admin' ? 'Administrator' : 'Supervisor'}
               </p>
-              <p className="text-xs text-sidebar-foreground/60">
+              <p className="text-xs font-medium text-white">
                 Access Level: {user.role}
               </p>
             </div>
@@ -108,48 +150,54 @@ export const NavigationSidebar: React.FC = () => {
         </div>
       </SidebarHeader>
       
-      <SidebarContent>
+      <SidebarContent className="overflow-y-auto sidebar-no-scrollbar">
+        {/* Core Platform */}
         <SidebarGroup>
+          <div className="px-4 py-2">
+            <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+              Core Platform
+            </h3>
+          </div>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton 
-                    asChild
-                    isActive={location.pathname === item.url}
-                    className="mx-2"
-                  >
-                    <Link 
-                      to={item.url}
-                      onClick={handleLinkClick}
-                      className={`evzip-sidebar-item ${location.pathname === item.url ? 'active' : ''}`}
-                    >
-                      <item.icon className="w-5 h-5" />
-                      <div className="flex flex-col">
-                        <span className="font-medium">{item.title}</span>
-                        <span className="text-xs opacity-70">
-                          {item.description}
-                        </span>
-                      </div>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {menuItems.map(renderMenuItem)}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* System */}
+        <SidebarGroup>
+          <div className="px-4 py-2">
+            <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+              System
+            </h3>
+          </div>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {systemItems.map(renderMenuItem)}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
 
       <SidebarFooter>
-        <div className="p-4">
+        <div className="p-4 border-t border-gray-700">
           <Button 
             onClick={handleLogout}
             variant="ghost"
-            className="w-full justify-start gap-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg"
+            className="w-full justify-start gap-3 text-white hover:text-red-300 hover:bg-red-900/20 rounded-lg h-auto p-3"
           >
-            <LogOut className="w-5 h-5" />
-            <span className="font-medium">Sign Out</span>
+            <LogOut className="w-5 h-5 text-white" />
+            <div className="text-left">
+              <div className="font-semibold text-sm text-white">Sign Out</div>
+              <div className="text-xs font-medium text-white">Exit platform</div>
+            </div>
           </Button>
+          <div className="text-center mt-3">
+            <p className="text-xs font-medium text-white">
+              EVCORE Platform v1.0
+            </p>
+          </div>
         </div>
       </SidebarFooter>
     </Sidebar>
