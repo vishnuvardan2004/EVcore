@@ -4,7 +4,8 @@ import { useToast } from '../hooks/use-toast';
 
 interface User {
   email: string;
-  role: 'admin' | 'supervisor' | 'pilot';
+  role: 'super-admin' | 'admin' | 'leadership' | 'manager' | 'supervisor' | 'pilot' | 'lead' | 'security' | 'hr' | 'finance';
+  permissions?: string[];
 }
 
 interface AuthContextType {
@@ -12,15 +13,25 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   isAuthenticated: boolean;
+  hasRole: (role: string) => boolean;
+  hasPermission: (permission: string) => boolean;
+  canAccessFeature: (featureId: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock user data
+// Mock user data with expanded roles
 const mockUsers = [
+  { email: "superadmin@example.com", password: "superadmin123", role: "super-admin" as const },
   { email: "admin@example.com", password: "admin123", role: "admin" as const },
+  { email: "leadership@example.com", password: "leadership123", role: "leadership" as const },
+  { email: "manager@example.com", password: "manager123", role: "manager" as const },
   { email: "supervisor@example.com", password: "super123", role: "supervisor" as const },
-  { email: "pilot@example.com", password: "pilot123", role: "pilot" as const }
+  { email: "pilot@example.com", password: "pilot123", role: "pilot" as const },
+  { email: "lead@example.com", password: "lead123", role: "lead" as const },
+  { email: "security@example.com", password: "security123", role: "security" as const },
+  { email: "hr@example.com", password: "hr123", role: "hr" as const },
+  { email: "finance@example.com", password: "finance123", role: "finance" as const }
 ];
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -33,13 +44,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     
     const foundUser = mockUsers.find(u => u.email === email && u.password === password);
     
-    if (foundUser && (foundUser.role === 'admin' || foundUser.role === 'supervisor')) {
+    if (foundUser) {
       setUser({ email: foundUser.email, role: foundUser.role });
       console.log('Login successful:', foundUser.email, foundUser.role);
       
       toast({
         title: "Welcome back!",
-        description: `Successfully logged in as ${foundUser.role}`,
+        description: `Successfully logged in as ${foundUser.role.replace('-', ' ')}`,
       });
       
       return true;
@@ -66,10 +77,88 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     });
   };
 
+  const hasRole = (role: string): boolean => {
+    return user?.role === role;
+  };
+
+  const hasPermission = (permission: string): boolean => {
+    if (!user) return false;
+    
+    // Role hierarchy with permission levels
+    const roleHierarchy = {
+      'super-admin': 10,
+      'admin': 9,
+      'leadership': 8,
+      'manager': 7,
+      'supervisor': 6,
+      'lead': 5,
+      'security': 4,
+      'hr': 4,
+      'finance': 4,
+      'pilot': 3
+    };
+    
+    // Super admin and admin have all permissions
+    if (user.role === 'super-admin' || user.role === 'admin') return true;
+    
+    return user.permissions?.includes(permission) || false;
+  };
+
+  const canAccessFeature = (featureId: string): boolean => {
+    if (!user) return false;
+    
+    // Super admin and admin can access everything
+    if (user.role === 'super-admin' || user.role === 'admin') return true;
+    
+    // Role-based feature access matrix
+    const roleFeatureAccess = {
+      'leadership': [
+        'vehicle-deployment', 'database-management', 'driver-induction', 
+        'trip-details', 'offline-bookings', 'charging-tracker', 'attendance',
+        'reports', 'dashboard', 'settings'
+      ],
+      'manager': [
+        'vehicle-deployment', 'database-management', 'driver-induction', 
+        'trip-details', 'offline-bookings', 'charging-tracker', 'attendance',
+        'reports'
+      ],
+      'supervisor': [
+        'vehicle-deployment', 'database-management', 'driver-induction', 
+        'trip-details', 'offline-bookings', 'charging-tracker', 'attendance'
+      ],
+      'lead': [
+        'vehicle-deployment', 'driver-induction', 'trip-details', 
+        'charging-tracker', 'attendance'
+      ],
+      'security': [
+        'vehicle-deployment', 'driver-induction', 'attendance', 'reports'
+      ],
+      'hr': [
+        'driver-induction', 'attendance', 'reports'
+      ],
+      'finance': [
+        'reports', 'database-management', 'trip-details'
+      ],
+      'pilot': [
+        'vehicle-deployment', 'trip-details', 'charging-tracker'
+      ]
+    };
+    
+    return roleFeatureAccess[user.role]?.includes(featureId) || false;
+  };
+
   const isAuthenticated = user !== null;
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      login, 
+      logout, 
+      isAuthenticated, 
+      hasRole, 
+      hasPermission, 
+      canAccessFeature 
+    }}>
       {children}
     </AuthContext.Provider>
   );

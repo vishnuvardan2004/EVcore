@@ -174,7 +174,15 @@ export const NavigationSidebar: React.FC = () => {
           </div>
           <SidebarGroupContent>
             <SidebarMenu>
-              {systemItems.map(renderMenuItem)}
+              {systemItems
+                .filter(item => {
+                  // Only show Admin Settings to super admins
+                  if (item.title === "Admin Settings") {
+                    return user?.role === 'super-admin';
+                  }
+                  return true;
+                })
+                .map(renderMenuItem)}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

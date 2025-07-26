@@ -1,8 +1,9 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { useRoleAccess } from '@/hooks/useRoleAccess';
 
 interface SubPlatform {
   id: string;
@@ -11,6 +12,7 @@ interface SubPlatform {
   description: string;
   route: string;
   isActive: boolean;
+  featureId: string; // Map to feature ID for role checking
 }
 
 const subPlatforms: SubPlatform[] = [
@@ -20,7 +22,8 @@ const subPlatforms: SubPlatform[] = [
     icon: '🚗',
     description: 'Track vehicle IN/OUT operations',
     route: '/vehicle-tracker',
-    isActive: true
+    isActive: true,
+    featureId: 'vehicle-deployment'
   },
   {
     id: 'attendance',
@@ -28,7 +31,8 @@ const subPlatforms: SubPlatform[] = [
     icon: '🕒',
     description: 'Track employee & pilot attendance',
     route: '/attendance',
-    isActive: true
+    isActive: true,
+    featureId: 'attendance'
   },
   {
     id: 'database',
@@ -36,7 +40,8 @@ const subPlatforms: SubPlatform[] = [
     icon: '🗂️',
     description: 'Manage staff, pilots, and customer records',
     route: '/database',
-    isActive: true
+    isActive: true,
+    featureId: 'database-management'
   },
   {
     id: 'driver-induction',
@@ -44,7 +49,8 @@ const subPlatforms: SubPlatform[] = [
     icon: '📋',
     description: 'Enter and manage full driver profiles',
     route: '/driver-induction',
-    isActive: true
+    isActive: true,
+    featureId: 'driver-induction'
   },
   {
     id: 'trip-details',
@@ -52,7 +58,8 @@ const subPlatforms: SubPlatform[] = [
     icon: '🚘',
     description: 'View and log trip records for each driver',
     route: '/trip-details',
-    isActive: true
+    isActive: true,
+    featureId: 'trip-details'
   },
   {
     id: 'offline-bookings',
@@ -60,7 +67,8 @@ const subPlatforms: SubPlatform[] = [
     icon: '📝',
     description: 'Record manual/offline ride bookings',
     route: '/offline-bookings',
-    isActive: true
+    isActive: true,
+    featureId: 'offline-bookings'
   },
   {
     id: 'charging-tracker',
@@ -68,15 +76,24 @@ const subPlatforms: SubPlatform[] = [
     icon: '⚡',
     description: 'Monitor charging status of vehicles',
     route: '/charging-tracker',
-    isActive: true
+    isActive: true,
+    featureId: 'charging-tracker'
   }
 ];
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { canAccessFeature, user } = useRoleAccess();
+
+  // Filter platforms based on user role and permissions
+  const accessiblePlatforms = useMemo(() => {
+    return subPlatforms.filter(platform => 
+      canAccessFeature(platform.featureId) && platform.isActive
+    );
+  }, [canAccessFeature]);
 
   const handleCardClick = (platform: SubPlatform) => {
-    if (platform.isActive) {
+    if (platform.isActive && canAccessFeature(platform.featureId)) {
       navigate(platform.route);
     }
   };
@@ -105,12 +122,22 @@ const Dashboard = () => {
             <p className="text-lg text-muted-foreground">
               Comprehensive fleet management powered by sustainable technology
             </p>
+            {user && (
+              <div className="mt-6">
+                <Badge variant="outline" className="text-lg px-4 py-2">
+                  Welcome back, {user.role.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                </Badge>
+                <p className="text-sm text-muted-foreground mt-2">
+                  You have access to {accessiblePlatforms.length} of {subPlatforms.length} features
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Platform Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {subPlatforms.map((platform) => (
+          {accessiblePlatforms.map((platform) => (
             <Card 
               key={platform.id}
               className={`group relative overflow-hidden transition-all duration-500 hover:scale-[1.02] cursor-pointer border-0 shadow-lg hover:shadow-2xl ${

@@ -3,127 +3,587 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
-import { Settings, Save, Eye, EyeOff } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  Settings, 
+  Save, 
+  Eye, 
+  EyeOff, 
+  Users, 
+  Shield, 
+  CheckCircle, 
+  XCircle,
+  Car,
+  Database,
+  UserPlus,
+  Route,
+  FileText,
+  Zap,
+  Clock
+} from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+
+// Define feature structure with detailed permissions
+interface FeaturePermissions {
+  view: boolean;
+  create: boolean;
+  edit: boolean;
+  delete: boolean;
+  export: boolean;
+}
+
+interface Feature {
+  id: string;
+  name: string;
+  description: string;
+  icon: any;
+  category: string;
+  permissions: FeaturePermissions;
+}
+
+interface RolePermissions {
+  enabled: boolean;
+  view: boolean;
+  create: boolean;
+  edit: boolean;
+  delete: boolean;
+  export: boolean;
+}
+
+const features: Feature[] = [
+  {
+    id: 'vehicle-deployment',
+    name: 'Vehicle Deployment Tracker',
+    description: 'Track vehicle IN/OUT operations and fleet management',
+    icon: Car,
+    category: 'Operations',
+    permissions: {
+      view: true,
+      create: true,
+      edit: true,
+      delete: false,
+      export: true
+    }
+  },
+  {
+    id: 'database-management',
+    name: 'Database Management',
+    description: 'Manage pilots, vehicles, and equipment records',
+    icon: Database,
+    category: 'Core',
+    permissions: {
+      view: true,
+      create: true,
+      edit: true,
+      delete: true,
+      export: true
+    }
+  },
+  {
+    id: 'driver-induction',
+    name: 'Driver Induction',
+    description: 'Complete driver onboarding and profile management',
+    icon: UserPlus,
+    category: 'HR',
+    permissions: {
+      view: true,
+      create: true,
+      edit: true,
+      delete: false,
+      export: false
+    }
+  },
+  {
+    id: 'trip-details',
+    name: 'Trip Details',
+    description: 'Trip logging and detailed route management',
+    icon: Route,
+    category: 'Operations',
+    permissions: {
+      view: true,
+      create: false,
+      edit: true,
+      delete: false,
+      export: true
+    }
+  },
+  {
+    id: 'offline-bookings',
+    name: 'Offline Bookings',
+    description: 'Manual booking creation and management',
+    icon: FileText,
+    category: 'Bookings',
+    permissions: {
+      view: true,
+      create: true,
+      edit: true,
+      delete: true,
+      export: true
+    }
+  },
+  {
+    id: 'charging-tracker',
+    name: 'Vehicle Charging Tracker',
+    description: 'Battery monitoring and charging station management',
+    icon: Zap,
+    category: 'Operations',
+    permissions: {
+      view: true,
+      create: false,
+      edit: true,
+      delete: false,
+      export: true
+    }
+  },
+  {
+    id: 'attendance',
+    name: 'Attendance System',
+    description: 'Employee attendance tracking and reporting',
+    icon: Clock,
+    category: 'HR',
+    permissions: {
+      view: true,
+      create: false,
+      edit: true,
+      delete: false,
+      export: true
+    }
+  }
+];
+
+// Role configuration - Updated with all roles
+const roles = [
+  {
+    id: 'super-admin',
+    name: 'Super Admin',
+    description: 'Ultimate platform access with all permissions',
+    color: 'bg-purple-100 text-purple-800',
+    level: 10
+  },
+  {
+    id: 'admin',
+    name: 'Administrator',
+    description: 'Full platform access with administrative permissions',
+    color: 'bg-red-100 text-red-800',
+    level: 9
+  },
+  {
+    id: 'leadership',
+    name: 'Leadership',
+    description: 'Executive level access with strategic oversight',
+    color: 'bg-indigo-100 text-indigo-800',
+    level: 8
+  },
+  {
+    id: 'manager',
+    name: 'Manager',
+    description: 'Departmental management with operational control',
+    color: 'bg-orange-100 text-orange-800',
+    level: 7
+  },
+  {
+    id: 'supervisor',
+    name: 'Supervisor',
+    description: 'Team supervision with limited administrative features',
+    color: 'bg-blue-100 text-blue-800',
+    level: 6
+  },
+  {
+    id: 'lead',
+    name: 'Team Lead',
+    description: 'Team coordination with operational responsibilities',
+    color: 'bg-teal-100 text-teal-800',
+    level: 5
+  },
+  {
+    id: 'security',
+    name: 'Security',
+    description: 'Security focused access with monitoring capabilities',
+    color: 'bg-yellow-100 text-yellow-800',
+    level: 4
+  },
+  {
+    id: 'hr',
+    name: 'Human Resources',
+    description: 'HR management with employee data access',
+    color: 'bg-pink-100 text-pink-800',
+    level: 4
+  },
+  {
+    id: 'finance',
+    name: 'Finance',
+    description: 'Financial data access with reporting capabilities',
+    color: 'bg-emerald-100 text-emerald-800',
+    level: 4
+  },
+  {
+    id: 'pilot',
+    name: 'Pilot/Driver',
+    description: 'Basic operational access for field users',
+    color: 'bg-green-100 text-green-800',
+    level: 3
+  }
+];
 
 const AdminModuleToggle = () => {
   const { toast } = useToast();
-  const [modules, setModules] = useState([
-    { id: 'vehicle-tracker', name: 'Vehicle Deployment Tracker', enabled: true, description: 'Track vehicle IN/OUT operations' },
-    { id: 'driver-induction', name: 'Driver Induction', enabled: true, description: 'Driver profile management system' },
-    { id: 'trip-details', name: 'Driver Trip Details', enabled: true, description: 'Trip logging and management' },
-    { id: 'charging-tracker', name: 'Vehicle Charging Tracker', enabled: true, description: 'Battery and charging monitoring' },
-    { id: 'offline-bookings', name: 'Offline Bookings', enabled: true, description: 'Manual booking management' },
-    { id: 'attendance', name: 'Attendance System', enabled: false, description: 'Employee attendance tracking' },
-    { id: 'database', name: 'Database Management', enabled: false, description: 'Staff and customer records' }
-  ]);
+  const { user } = useAuth();
+  
+  // State for role-based feature visibility - Updated for all roles
+  const [rolePermissions, setRolePermissions] = useState<{
+    [roleId: string]: { [featureId: string]: RolePermissions }
+  }>({
+    'super-admin': features.reduce((acc, feature) => ({
+      ...acc,
+      [feature.id]: { enabled: true, view: true, create: true, edit: true, delete: true, export: true }
+    }), {}),
+    'admin': features.reduce((acc, feature) => ({
+      ...acc,
+      [feature.id]: { enabled: true, view: true, create: true, edit: true, delete: true, export: true }
+    }), {}),
+    'leadership': features.reduce((acc, feature) => ({
+      ...acc,
+      [feature.id]: { enabled: true, view: true, create: true, edit: true, delete: true, export: true }
+    }), {}),
+    'manager': features.reduce((acc, feature) => ({
+      ...acc,
+      [feature.id]: { 
+        enabled: true, 
+        view: true, 
+        create: true, 
+        edit: true, 
+        delete: feature.id !== 'database-management', 
+        export: true 
+      }
+    }), {}),
+    'supervisor': features.reduce((acc, feature) => ({
+      ...acc,
+      [feature.id]: { 
+        enabled: feature.category !== 'Core' || feature.id === 'database-management', 
+        view: true,
+        create: feature.id !== 'database-management',
+        edit: true,
+        delete: false,
+        export: feature.id !== 'driver-induction'
+      }
+    }), {}),
+    'lead': features.reduce((acc, feature) => ({
+      ...acc,
+      [feature.id]: { 
+        enabled: ['vehicle-deployment', 'driver-induction', 'trip-details', 'charging-tracker', 'attendance'].includes(feature.id),
+        view: true,
+        create: feature.id !== 'attendance',
+        edit: true,
+        delete: false,
+        export: false
+      }
+    }), {}),
+    'security': features.reduce((acc, feature) => ({
+      ...acc,
+      [feature.id]: { 
+        enabled: ['vehicle-deployment', 'driver-induction', 'attendance'].includes(feature.id),
+        view: true,
+        create: feature.id === 'driver-induction',
+        edit: feature.id === 'attendance',
+        delete: false,
+        export: false
+      }
+    }), {}),
+    'hr': features.reduce((acc, feature) => ({
+      ...acc,
+      [feature.id]: { 
+        enabled: ['driver-induction', 'attendance'].includes(feature.id),
+        view: true,
+        create: feature.id === 'driver-induction',
+        edit: true,
+        delete: feature.id === 'driver-induction',
+        export: true
+      }
+    }), {}),
+    'finance': features.reduce((acc, feature) => ({
+      ...acc,
+      [feature.id]: { 
+        enabled: ['database-management', 'trip-details'].includes(feature.id),
+        view: true,
+        create: false,
+        edit: false,
+        delete: false,
+        export: true
+      }
+    }), {}),
+    'pilot': features.reduce((acc, feature) => ({
+      ...acc,
+      [feature.id]: { 
+        enabled: ['vehicle-deployment', 'trip-details', 'charging-tracker'].includes(feature.id),
+        view: true,
+        create: false,
+        edit: false,
+        delete: false,
+        export: false
+      }
+    }), {})
+  });
 
-  const toggleModule = (moduleId: string) => {
-    setModules(prev => 
-      prev.map(module => 
-        module.id === moduleId 
-          ? { ...module, enabled: !module.enabled }
-          : module
-      )
+  // Only allow super admin to access this page
+  if (user?.role !== 'super-admin') {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card className="w-96">
+          <CardHeader className="text-center">
+            <Shield className="w-16 h-16 text-red-500 mx-auto mb-4" />
+            <CardTitle className="text-red-600">Access Denied</CardTitle>
+            <CardDescription>
+              This page requires Super Administrator privileges. Only Super Admins can manage role-based feature access.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
     );
+  }
+
+  const toggleFeatureForRole = (roleId: string, featureId: string) => {
+    setRolePermissions(prev => ({
+      ...prev,
+      [roleId]: {
+        ...prev[roleId],
+        [featureId]: {
+          ...prev[roleId][featureId],
+          enabled: !prev[roleId][featureId].enabled
+        }
+      }
+    }));
+  };
+
+  const togglePermissionForRole = (roleId: string, featureId: string, permission: string) => {
+    setRolePermissions(prev => ({
+      ...prev,
+      [roleId]: {
+        ...prev[roleId],
+        [featureId]: {
+          ...prev[roleId][featureId],
+          [permission]: !prev[roleId][featureId][permission]
+        }
+      }
+    }));
   };
 
   const saveChanges = () => {
+    // Here you would typically save to your backend
+    console.log('Saving role permissions:', rolePermissions);
+    
     toast({
-      title: "Settings Saved",
-      description: "Module visibility settings have been updated successfully.",
+      title: "Settings Saved Successfully",
+      description: "Role-based feature access has been updated for all user roles.",
     });
   };
 
+  const getFeatureStats = () => {
+    const stats = {};
+    roles.forEach(role => {
+      stats[role.id] = features.filter(feature => 
+        rolePermissions[role.id][feature.id]?.enabled
+      ).length;
+    });
+    return stats;
+  };
+
+  const featureStats = getFeatureStats();
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Module Toggle Panel</h1>
-          <p className="text-gray-600">Enable or disable platform modules visibility in the dashboard</p>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
+              <Shield className="w-6 h-6 text-red-600" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Admin Settings</h1>
+              <p className="text-gray-600">Role-based feature access management for EVCORE platform</p>
+            </div>
+          </div>
+          
+          {/* Role Overview Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
+            {roles.map(role => (
+              <Card key={role.id} className="border-l-4 border-l-blue-500">
+                <CardContent className="p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <Badge className={`${role.color} text-xs`}>{role.name}</Badge>
+                    <span className="text-lg font-bold text-gray-900">
+                      {featureStats[role.id]}/{features.length}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-600 line-clamp-2">{role.description}</p>
+                  <div className="mt-2 text-xs text-gray-500">
+                    Features: {featureStats[role.id]}/{features.length}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
 
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <Settings className="w-6 h-6 text-blue-600" />
-              <div>
-                <CardTitle>Module Visibility Control</CardTitle>
-                <CardDescription>Toggle which modules are visible to users in the main dashboard</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              {modules.map((module) => (
-                <div key={module.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100">
-                      {module.enabled ? (
-                        <Eye className="w-5 h-5 text-blue-600" />
-                      ) : (
-                        <EyeOff className="w-5 h-5 text-gray-400" />
-                      )}
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-gray-900">{module.name}</h3>
-                      <p className="text-sm text-gray-600">{module.description}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className={`text-sm font-medium ${module.enabled ? 'text-green-600' : 'text-gray-400'}`}>
-                      {module.enabled ? 'Visible' : 'Hidden'}
-                    </span>
-                    <Switch
-                      checked={module.enabled}
-                      onCheckedChange={() => toggleModule(module.id)}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
+        {/* Main Content */}
+        <Tabs defaultValue="super-admin" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10 gap-1 h-auto p-1">
+            {roles.map(role => (
+              <TabsTrigger 
+                key={role.id} 
+                value={role.id} 
+                className="flex flex-col items-center gap-1 px-2 py-2 text-xs min-h-[60px]"
+              >
+                <Users className="w-3 h-3" />
+                <span className="text-center leading-tight">{role.name}</span>
+              </TabsTrigger>
+            ))}
+          </TabsList>
 
-            <div className="mt-8 pt-6 border-t">
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="text-sm text-gray-600">
-                    {modules.filter(m => m.enabled).length} of {modules.length} modules enabled
-                  </p>
-                </div>
-                <Button onClick={saveChanges} className="gap-2">
-                  <Save className="w-4 h-4" />
-                  Save Changes
-                </Button>
+          {roles.map(role => (
+            <TabsContent key={role.id} value={role.id}>
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <Badge className={role.color}>{role.name}</Badge>
+                        Feature Access Control
+                      </CardTitle>
+                      <CardDescription>
+                        Configure which features and permissions are available to {role.name.toLowerCase()} users
+                      </CardDescription>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-gray-900">{featureStats[role.id]}/{features.length}</div>
+                      <div className="text-sm text-gray-500">Features enabled</div>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {features.map(feature => {
+                      const FeatureIcon = feature.icon;
+                      const isEnabled = rolePermissions[role.id][feature.id]?.enabled;
+                      const permissions = rolePermissions[role.id][feature.id];
+                      
+                      return (
+                        <div key={feature.id} className={`p-6 border rounded-lg transition-all ${
+                          isEnabled ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
+                        }`}>
+                          {/* Feature Header */}
+                          <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-4">
+                              <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+                                isEnabled ? 'bg-green-100' : 'bg-gray-100'
+                              }`}>
+                                <FeatureIcon className={`w-6 h-6 ${
+                                  isEnabled ? 'text-green-600' : 'text-gray-400'
+                                }`} />
+                              </div>
+                              <div>
+                                <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                                  {feature.name}
+                                  <Badge variant="outline">{feature.category}</Badge>
+                                </h3>
+                                <p className="text-sm text-gray-600">{feature.description}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-4">
+                              <div className="flex items-center gap-2">
+                                {isEnabled ? (
+                                  <CheckCircle className="w-5 h-5 text-green-500" />
+                                ) : (
+                                  <XCircle className="w-5 h-5 text-red-500" />
+                                )}
+                                <span className={`text-sm font-medium ${
+                                  isEnabled ? 'text-green-600' : 'text-red-600'
+                                }`}>
+                                  {isEnabled ? 'Enabled' : 'Disabled'}
+                                </span>
+                              </div>
+                              <Switch
+                                checked={isEnabled}
+                                onCheckedChange={() => toggleFeatureForRole(role.id, feature.id)}
+                              />
+                            </div>
+                          </div>
+
+                          {/* Permissions Grid */}
+                          {isEnabled && (
+                            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 pt-4 border-t border-green-200">
+                              {Object.entries(permissions).map(([permission, value]) => {
+                                if (permission === 'enabled') return null;
+                                
+                                return (
+                                  <div key={permission} className="flex items-center justify-between p-2 bg-white rounded border">
+                                    <span className="text-sm font-medium capitalize">{permission}</span>
+                                    <Switch
+                                      checked={value as boolean}
+                                      onCheckedChange={() => togglePermissionForRole(role.id, feature.id, permission)}
+                                    />
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          ))}
+        </Tabs>
+
+        {/* Save Changes Section */}
+        <Card className="mt-8">
+          <CardContent className="p-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-1">Save Configuration</h3>
+                <p className="text-sm text-gray-600">
+                  Apply role-based feature access changes to the platform
+                </p>
               </div>
+              <Button onClick={saveChanges} className="gap-2 bg-green-600 hover:bg-green-700">
+                <Save className="w-4 h-4" />
+                Save All Changes
+              </Button>
             </div>
           </CardContent>
         </Card>
 
         {/* System Status */}
-        <div className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>System Status</CardTitle>
-              <CardDescription>Current platform performance metrics</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">99.9%</div>
-                  <div className="text-sm text-gray-600">Platform Uptime</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">247ms</div>
-                  <div className="text-sm text-gray-600">Avg Response Time</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-purple-600">1,420</div>
-                  <div className="text-sm text-gray-600">Active Sessions</div>
-                </div>
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Platform Status</CardTitle>
+            <CardDescription>Current system performance and usage metrics</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="text-center p-4 bg-green-50 rounded-lg">
+                <div className="text-2xl font-bold text-green-600">99.9%</div>
+                <div className="text-sm text-gray-600">Platform Uptime</div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+              <div className="text-center p-4 bg-blue-50 rounded-lg">
+                <div className="text-2xl font-bold text-blue-600">247ms</div>
+                <div className="text-sm text-gray-600">Avg Response Time</div>
+              </div>
+              <div className="text-center p-4 bg-purple-50 rounded-lg">
+                <div className="text-2xl font-bold text-purple-600">1,420</div>
+                <div className="text-sm text-gray-600">Active Sessions</div>
+              </div>
+              <div className="text-center p-4 bg-orange-50 rounded-lg">
+                <div className="text-2xl font-bold text-orange-600">{features.length}</div>
+                <div className="text-sm text-gray-600">Total Features</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
