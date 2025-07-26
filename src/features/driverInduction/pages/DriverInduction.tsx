@@ -3,8 +3,9 @@ import React, { useState } from 'react';
 import { PageLayout } from '../../../components/PageLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Save, CheckCircle, Clock, FileText, Users } from 'lucide-react';
 import { PersonalInformationSection } from '../components/PersonalInformationSection';
 import { DrivingInformationSection } from '../components/DrivingInformationSection';
 import { IdentityDocumentsSection } from '../components/IdentityDocumentsSection';
@@ -13,9 +14,11 @@ import { AddressDetailsSection } from '../components/AddressDetailsSection';
 import { PVCInformationSection } from '../components/PVCInformationSection';
 import { FamilyEmergencySection } from '../components/FamilyEmergencySection';
 import { MedicalInductionSection } from '../components/MedicalInductionSection';
+import { QuickRegistration } from '../components/QuickRegistration';
+import { TemporaryPilotsList } from '../components/TemporaryPilotsList';
 import { useToast } from '../../../hooks/use-toast';
 import { driverInductionService } from '../services/driverInductionService';
-import { PilotInductionData } from '../../../types/pilot';
+import { PilotInductionData, TemporaryPilot } from '../../../types/pilot';
 
 export interface DriverInductionData {
   personalInfo: {
@@ -140,14 +143,85 @@ const initialData: DriverInductionData = {
 const DriverInduction = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState<'quick' | 'temporary' | 'full'>('quick');
+  const [temporaryPilots, setTemporaryPilots] = useState<TemporaryPilot[]>([]);
   const [formData, setFormData] = useState<DriverInductionData>(initialData);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [showFullForm, setShowFullForm] = useState(false);
+  
+  // Temporary pilots state (in real app, this would come from context/store)
 
   const updateFormData = (section: keyof DriverInductionData, data: any) => {
     setFormData(prev => ({
       ...prev,
       [section]: { ...prev[section], ...data }
     }));
+  };
+
+  const handleTemporaryRegistration = (tempPilot: TemporaryPilot) => {
+    setTemporaryPilots(prev => [...prev, tempPilot]);
+    
+    // TODO: Sync with database
+    // pilotService.createTemporaryPilot(tempPilot);
+    
+    // Switch to temporary pilots tab to show the new registration
+    setActiveTab('temporary');
+  };
+
+  const handleConvertToFull = (tempPilot: TemporaryPilot) => {
+    // Pre-fill form with temporary pilot data
+    setFormData(prev => ({
+      ...prev,
+      personalInfo: {
+        ...prev.personalInfo,
+        fullName: tempPilot.fullName,
+        mobileNumber: tempPilot.mobileNumber,
+        emailId: tempPilot.emailId || ''
+      }
+    }));
+    
+    setShowFullForm(true);
+    setActiveTab('full');
+    
+    toast({
+      title: 'Converting to Full Registration',
+      description: `Pre-filled form with ${tempPilot.fullName}'s information.`,
+    });
+  };
+
+  const handleExtendAccess = (tempId: string, additionalRides: number, additionalDays: number) => {
+    setTemporaryPilots(prev => 
+      prev.map(pilot => 
+        pilot.tempId === tempId 
+          ? {
+              ...pilot,
+              allowedRides: pilot.allowedRides + additionalRides,
+              expiryDate: new Date(pilot.expiryDate.getTime() + additionalDays * 24 * 60 * 60 * 1000)
+            }
+          : pilot
+      )
+    );
+    
+    toast({
+      title: 'Access Extended',
+      description: `Added ${additionalRides} rides and ${additionalDays} days.`,
+    });
+  };
+
+  const handleRevokeAccess = (tempId: string) => {
+    setTemporaryPilots(prev => 
+      prev.map(pilot => 
+        pilot.tempId === tempId 
+          ? { ...pilot, status: 'expired' as const }
+          : pilot
+      )
+    );
+    
+    toast({
+      title: 'Access Revoked',
+      description: 'Temporary pilot access has been revoked.',
+      variant: 'destructive'
+    });
   };
 
   const handleSubmit = async () => {
@@ -248,9 +322,9 @@ const DriverInduction = () => {
   return (
     <PageLayout 
       title="📋 Driver Induction" 
-      subtitle="Enter and manage full driver profiles"
+      subtitle="Register new drivers and manage pilot profiles"
     >
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="max-w-6xl mx-auto space-y-6">
         <div className="flex justify-between items-center">
           <Button onClick={() => navigate('/')} variant="outline" className="gap-2">
             <ArrowLeft className="w-4 h-4" />
@@ -261,9 +335,43 @@ const DriverInduction = () => {
           </div>
         </div>
 
-        <Card>
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Driver Induction Form</CardTitle>
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'quick' | 'temporary' | 'full')} className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="quick">Quick Registration</TabsTrigger>
+            <TabsTrigger value="temporary">Temporary Pilots</TabsTrigger>
+            <TabsTrigger value="full">Full Registration</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="quick">
+            <QuickRegistration 
+              onRegistrationComplete={() => setActiveTab('temporary')}
+              onViewFullForm={() => setActiveTab('full')}
+            />
+          </TabsContent>
+
+          <TabsContent value="temporary">
+            <TemporaryPilotsList 
+              tempPilots={temporaryPilots}
+              onConvertToFull={(pilotId) => {
+                // TODO: Implement conversion to full registration
+                console.log('Convert pilot to full registration:', pilotId);
+                setActiveTab('full');
+              }}
+              onExtendAccess={(pilotId) => {
+                // TODO: Implement access extension
+                console.log('Extend access for pilot:', pilotId);
+              }}
+              onRevokeAccess={(pilotId) => {
+                // TODO: Implement access revocation
+                console.log('Revoke access for pilot:', pilotId);
+              }}
+            />
+          </TabsContent>
+
+          <TabsContent value="full">
+            <Card>
+              <CardHeader className="text-center">
+                <CardTitle className="text-2xl">Complete Driver Induction Form</CardTitle>
             <CardDescription>
               Complete onboarding information for new drivers/pilots
             </CardDescription>
@@ -317,6 +425,8 @@ const DriverInduction = () => {
             </div>
           </CardContent>
         </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </PageLayout>
   );

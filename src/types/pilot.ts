@@ -62,6 +62,7 @@ export interface PilotMedicalInfo {
 
 export interface Pilot {
   id: string; // Auto-generated EVZIP-{number}
+  tempId?: string; // Temporary ID for quick access (TEMP-001)
   personalInfo: PilotPersonalInfo;
   drivingInfo: PilotDrivingInfo;
   identityDocs: PilotIdentityDocs;
@@ -71,8 +72,43 @@ export interface Pilot {
   familyEmergency: PilotFamilyEmergency;
   medicalInfo: PilotMedicalInfo;
   inductionDate: Date;
-  status: 'active' | 'inactive' | 'pending';
+  status: 'active' | 'inactive' | 'pending' | 'temporary' | 'pending_verification';
   profilePicture?: File | null;
+  
+  // Temporary Access Configuration
+  temporaryAccess?: {
+    isTemporary: boolean;
+    allowedRides: number;
+    completedRides: number;
+    expiryDate: Date;
+    supervisionRequired: boolean;
+    registeredBy: string; // Staff member who registered
+  };
+  
+  // Document Status Tracking
+  documentStatus?: {
+    aadhar: 'not_submitted' | 'submitted' | 'verified' | 'rejected';
+    license: 'not_submitted' | 'submitted' | 'verified' | 'rejected';
+    photo: 'not_submitted' | 'submitted' | 'verified' | 'rejected';
+    address: 'not_submitted' | 'submitted' | 'verified' | 'rejected';
+    banking: 'not_submitted' | 'submitted' | 'verified' | 'rejected';
+    medical: 'not_submitted' | 'submitted' | 'verified' | 'rejected';
+  };
+}
+
+// Temporary Pilot - Minimal info for quick registration
+export interface TemporaryPilot {
+  tempId: string; // TEMP-001, TEMP-002, etc.
+  fullName: string;
+  mobileNumber: string;
+  emailId?: string;
+  allowedRides: number;
+  completedRides: number;
+  expiryDate: Date;
+  registeredBy: string;
+  registrationDate: Date;
+  status: 'temporary' | 'pending_verification' | 'expired' | 'converted';
+  notes?: string;
 }
 
 export interface PilotInductionData {

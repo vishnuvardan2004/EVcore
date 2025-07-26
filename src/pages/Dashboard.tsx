@@ -162,19 +162,6 @@ const Dashboard = () => {
                 }`}>
                   {platform.description}
                 </CardDescription>
-                
-                {platform.isActive ? (
-                  <div className="flex items-center justify-center gap-2">
-                    <Badge className="bg-gradient-to-r from-accent to-accent/90 text-white border-0 font-bold px-4 py-1 shadow-lg">
-                      <div className="w-2 h-2 bg-white rounded-full mr-2 animate-pulse"></div>
-                      Active
-                    </Badge>
-                  </div>
-                ) : (
-                  <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200 font-semibold">
-                    Coming Soon
-                  </Badge>
-                )}
               </CardContent>
               
               {/* Bottom accent line */}
