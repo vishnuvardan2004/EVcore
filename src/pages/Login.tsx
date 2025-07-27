@@ -38,11 +38,6 @@ const Login = () => {
     });
   };
 
-  const handleCredentialClick = (email: string, password: string) => {
-    setFormData({ email, password });
-    setError('');
-  };
-
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -124,98 +119,6 @@ const Login = () => {
                 {isLoading ? 'Signing in...' : 'Sign In to EVCORE'}
               </Button>
             </form>
-
-            {/* Demo Credentials */}
-            <div className="mt-6 p-4 bg-muted/30 rounded-xl border border-border/50">
-              <p className="text-sm font-semibold text-foreground mb-3">Demo Credentials:</p>
-              <div className="text-xs text-muted-foreground space-y-1.5 max-h-48 overflow-y-auto">
-                <div className="grid grid-cols-1 gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => handleCredentialClick('superadmin@example.com', 'superadmin123')}
-                    className="flex justify-between items-center hover:bg-muted/50 p-1.5 rounded transition-colors"
-                  >
-                    <span className="font-medium text-purple-600">Super Admin:</span>
-                    <span>superadmin@example.com / superadmin123</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleCredentialClick('admin@example.com', 'admin123')}
-                    className="flex justify-between items-center hover:bg-muted/50 p-1.5 rounded transition-colors"
-                  >
-                    <span className="font-medium text-red-600">Admin:</span>
-                    <span>admin@example.com / admin123</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleCredentialClick('leadership@example.com', 'leadership123')}
-                    className="flex justify-between items-center hover:bg-muted/50 p-1.5 rounded transition-colors"
-                  >
-                    <span className="font-medium text-indigo-600">Leadership:</span>
-                    <span>leadership@example.com / leadership123</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleCredentialClick('manager@example.com', 'manager123')}
-                    className="flex justify-between items-center hover:bg-muted/50 p-1.5 rounded transition-colors"
-                  >
-                    <span className="font-medium text-orange-600">Manager:</span>
-                    <span>manager@example.com / manager123</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleCredentialClick('supervisor@example.com', 'super123')}
-                    className="flex justify-between items-center hover:bg-muted/50 p-1.5 rounded transition-colors"
-                  >
-                    <span className="font-medium text-blue-600">Supervisor:</span>
-                    <span>supervisor@example.com / super123</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleCredentialClick('lead@example.com', 'lead123')}
-                    className="flex justify-between items-center hover:bg-muted/50 p-1.5 rounded transition-colors"
-                  >
-                    <span className="font-medium text-teal-600">Lead:</span>
-                    <span>lead@example.com / lead123</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleCredentialClick('security@example.com', 'security123')}
-                    className="flex justify-between items-center hover:bg-muted/50 p-1.5 rounded transition-colors"
-                  >
-                    <span className="font-medium text-yellow-600">Security:</span>
-                    <span>security@example.com / security123</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleCredentialClick('hr@example.com', 'hr123')}
-                    className="flex justify-between items-center hover:bg-muted/50 p-1.5 rounded transition-colors"
-                  >
-                    <span className="font-medium text-pink-600">HR:</span>
-                    <span>hr@example.com / hr123</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleCredentialClick('finance@example.com', 'finance123')}
-                    className="flex justify-between items-center hover:bg-muted/50 p-1.5 rounded transition-colors"
-                  >
-                    <span className="font-medium text-emerald-600">Finance:</span>
-                    <span>finance@example.com / finance123</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleCredentialClick('pilot@example.com', 'pilot123')}
-                    className="flex justify-between items-center hover:bg-muted/50 p-1.5 rounded transition-colors"
-                  >
-                    <span className="font-medium text-green-600">Pilot:</span>
-                    <span>pilot@example.com / pilot123</span>
-                  </button>
-                </div>
-              </div>
-              <div className="mt-2 text-xs text-muted-foreground/70 text-center">
-                Click any credential to auto-fill and test different role access levels
-              </div>
-            </div>
           </CardContent>
         </Card>
 
