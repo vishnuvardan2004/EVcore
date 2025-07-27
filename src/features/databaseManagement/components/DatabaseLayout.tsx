@@ -171,7 +171,7 @@ const SidebarContent: React.FC<SidebarContentProps> = ({ currentPath, onItemClic
 
   return (
     <div className="h-full bg-white border-r border-gray-200">
-      <div className="p-6">
+      <div className="pt-6 pr-6 pb-6 pl-6">
         <div className="flex items-center gap-2 mb-6">
           <Database className="w-6 h-6 text-blue-600" />
           <h2 className="text-lg font-semibold">Master Database</h2>
@@ -189,9 +189,9 @@ export const DatabaseLayout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 m-0 p-0">
       {/* Desktop Sidebar */}
-      <div className="hidden md:flex md:w-80 md:flex-col">
+      <div className="hidden md:flex md:w-80 md:flex-col md:ml-0">
         <SidebarContent currentPath={location.pathname} />
       </div>
 
