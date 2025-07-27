@@ -21,7 +21,9 @@ import {
   Fuel,
   Settings
 } from 'lucide-react';
-import { databaseService } from '../services/database';
+import { apiService } from '../../../services/api';
+import { useAPI, useMutation } from '../../../hooks/useAPI';
+import { useErrorHandler } from '../../../hooks/useErrorHandler';
 import { Vehicle } from '../types';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -31,8 +33,7 @@ type VehicleType = 'Electric' | 'Hybrid' | 'Petrol' | 'Diesel';
 
 export const VehicleManagement: React.FC = () => {
   const { user } = useAuth();
-  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { handleSuccess } = useErrorHandler();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<VehicleStatus | 'all'>('all');
   const [typeFilter, setTypeFilter] = useState<VehicleType | 'all'>('all');
@@ -40,24 +41,59 @@ export const VehicleManagement: React.FC = () => {
   const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
   const [formData, setFormData] = useState<Partial<Vehicle>>({});
 
+  // API hooks
+  const {
+    data: vehicles = [],
+    loading,
+    refetch: fetchVehicles
+  } = useAPI(() => apiService.vehicles.getAll({
+    search: searchTerm || undefined,
+    status: statusFilter !== 'all' ? statusFilter : undefined,
+    type: typeFilter !== 'all' ? typeFilter : undefined,
+  }));
+
+  const createVehicleMutation = useMutation(
+    (data: Partial<Vehicle>) => apiService.vehicles.create(data),
+    {
+      onSuccess: () => {
+        handleSuccess('Vehicle created successfully');
+        setIsAddDialogOpen(false);
+        resetForm();
+        fetchVehicles();
+      }
+    }
+  );
+
+  const updateVehicleMutation = useMutation(
+    ({ id, data }: { id: string; data: Partial<Vehicle> }) => 
+      apiService.vehicles.update(id, data),
+    {
+      onSuccess: () => {
+        handleSuccess('Vehicle updated successfully');
+        setIsAddDialogOpen(false);
+        resetForm();
+        fetchVehicles();
+      }
+    }
+  );
+
+  const deleteVehicleMutation = useMutation(
+    (id: string) => apiService.vehicles.delete(id),
+    {
+      onSuccess: () => {
+        handleSuccess('Vehicle deleted successfully');
+        fetchVehicles();
+      }
+    }
+  );
+
   const canEdit = user?.role && ['super_admin', 'admin', 'leadership'].includes(user.role);
   const canDelete = user?.role && ['super_admin', 'admin'].includes(user.role);
 
-  const fetchVehicles = async () => {
-    try {
-      setLoading(true);
-      const data = await databaseService.getVehicles();
-      setVehicles(data);
-    } catch (error) {
-      console.error('Error fetching vehicles:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Refetch when filters change
   useEffect(() => {
     fetchVehicles();
-  }, []);
+  }, [searchTerm, statusFilter, typeFilter, fetchVehicles]);
 
   const filteredVehicles = vehicles.filter(vehicle => {
     const matchesSearch = vehicle.registrationNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -71,17 +107,12 @@ export const VehicleManagement: React.FC = () => {
   const handleSave = async () => {
     try {
       if (editingVehicle) {
-        await databaseService.updateVehicle(editingVehicle.id, formData, user?.email || 'unknown');
+        await updateVehicleMutation.mutate({ id: editingVehicle.id, data: formData });
       } else {
-        await databaseService.createVehicle(formData as Omit<Vehicle, 'id' | 'createdAt' | 'updatedAt'>, user?.email || 'unknown');
+        await createVehicleMutation.mutate(formData);
       }
-      
-      await fetchVehicles();
-      setIsAddDialogOpen(false);
-      setEditingVehicle(null);
-      setFormData({});
     } catch (error) {
-      console.error('Error saving vehicle:', error);
+      // Error handling is done in the mutation hooks
     }
   };
 
@@ -90,10 +121,9 @@ export const VehicleManagement: React.FC = () => {
     
     if (confirm('Are you sure you want to delete this vehicle?')) {
       try {
-        await databaseService.deleteVehicle(id, user?.email || 'unknown');
-        await fetchVehicles();
+        await deleteVehicleMutation.mutate(id);
       } catch (error) {
-        console.error('Error deleting vehicle:', error);
+        // Error handling is done in the mutation hook
       }
     }
   };
@@ -414,7 +444,7 @@ export const VehicleManagement: React.FC = () => {
             <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSave}>
+            <Button onClick={handleSave} disabled={createVehicleMutation.loading || updateVehicleMutation.loading}>
               {editingVehicle ? 'Update' : 'Add'} Vehicle
             </Button>
           </DialogFooter>

@@ -1,6 +1,8 @@
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { useToast } from '../hooks/use-toast';
+import { apiService } from '../services/api';
+import { config } from '../config/environment';
 
 interface User {
   email: string;
@@ -36,24 +38,64 @@ const mockUsers = [
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
+  // Check for existing token on mount
+  useEffect(() => {
+    const initializeAuth = async () => {
+      const token = localStorage.getItem(config.TOKEN_STORAGE_KEY);
+      if (token) {
+        try {
+          const response = await apiService.auth.verifyToken();
+          if (response.success) {
+            setUser(response.data.user);
+          } else {
+            localStorage.removeItem(config.TOKEN_STORAGE_KEY);
+          }
+        } catch (error) {
+          console.error('Token verification failed:', error);
+          localStorage.removeItem(config.TOKEN_STORAGE_KEY);
+        }
+      }
+      setIsLoading(false);
+    };
+
+    initializeAuth();
+  }, []);
+
   const login = async (email: string, password: string): Promise<boolean> => {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    const foundUser = mockUsers.find(u => u.email === email && u.password === password);
-    
-    if (foundUser) {
-      setUser({ email: foundUser.email, role: foundUser.role });
-      console.log('Login successful:', foundUser.email, foundUser.role);
+    try {
+      // Try API login first
+      const response = await apiService.auth.login({ email, password });
       
-      toast({
-        title: "Welcome back!",
-        description: `Successfully logged in as ${foundUser.role.replace('-', ' ')}`,
-      });
+      if (response.success) {
+        localStorage.setItem(config.TOKEN_STORAGE_KEY, response.data.token);
+        setUser(response.data.user);
+        toast({
+          title: "Welcome back!",
+          description: `Successfully logged in as ${response.data.user.role.replace('-', ' ')}`,
+        });
+        return true;
+      }
+    } catch (error) {
+      console.log('API login failed, trying mock authentication...');
       
-      return true;
+      // Fallback to mock authentication for development
+      const foundUser = mockUsers.find(u => u.email === email && u.password === password);
+      
+      if (foundUser) {
+        // Create a mock token for development
+        const mockToken = btoa(JSON.stringify({ email: foundUser.email, role: foundUser.role, exp: Date.now() + 86400000 }));
+        localStorage.setItem(config.TOKEN_STORAGE_KEY, mockToken);
+        setUser({ email: foundUser.email, role: foundUser.role });
+        
+        toast({
+          title: "Welcome back!",
+          description: `Successfully logged in as ${foundUser.role.replace('-', ' ')} (Mock)`,
+        });
+        return true;
+      }
     }
     
     console.log('Login failed: Invalid credentials or insufficient permissions');
@@ -67,14 +109,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return false;
   };
 
-  const logout = () => {
-    setUser(null);
-    console.log('User logged out');
-    
-    toast({
-      title: "👋 Logged Out",
-      description: "You have been successfully logged out.",
-    });
+  const logout = async () => {
+    try {
+      await apiService.auth.logout();
+    } catch (error) {
+      console.log('API logout failed, proceeding with local logout');
+    } finally {
+      localStorage.removeItem(config.TOKEN_STORAGE_KEY);
+      localStorage.removeItem(config.REFRESH_TOKEN_STORAGE_KEY);
+      setUser(null);
+      console.log('User logged out');
+      
+      toast({
+        title: "👋 Logged Out",
+        description: "You have been successfully logged out.",
+      });
+    }
   };
 
   const hasRole = (role: string): boolean => {

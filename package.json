@@ -9,7 +9,13 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages -d dist",
+    "type-check": "tsc --noEmit",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "backend:setup": "echo 'Setting up backend development environment...'",
+    "backend:dev": "echo 'Start your backend server on http://localhost:3001'",
+    "full-stack:dev": "concurrently \"npm run dev\" \"npm run backend:dev\""
   },
   "overrides": {
     "lovable-tagger": {
