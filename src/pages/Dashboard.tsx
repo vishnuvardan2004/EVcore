@@ -1,90 +1,120 @@
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { useRoleAccess } from '@/hooks/useRoleAccess';
+import { Zap } from 'lucide-react';
 
 interface SubPlatform {
   id: string;
   title: string;
-  icon: string;
   description: string;
   route: string;
   isActive: boolean;
-  featureId: string; // Map to feature ID for role checking
+  featureId: string;
+  gradient: string;
+  icon: string;
+  category: 'core' | 'analytics' | 'operations' | 'management';
+  stats?: { label: string; value: string; trend: string };
 }
 
 const subPlatforms: SubPlatform[] = [
   {
     id: 'vehicle-tracker',
-    title: 'Vehicle Deployment Tracker',
-    icon: '🚗',
-    description: 'Track vehicle IN/OUT operations',
+    title: 'Vehicle Deployment',
+    description: 'Real-time fleet tracking and deployment management',
     route: '/vehicle-tracker',
     isActive: true,
-    featureId: 'vehicle-deployment'
+    featureId: 'vehicle-deployment',
+    gradient: 'from-blue-600 via-blue-500 to-cyan-400',
+    icon: '🚗',
+    category: 'core',
+    stats: { label: 'Active Vehicles', value: '24', trend: '+12%' }
   },
   {
     id: 'offline-bookings',
-    title: 'Offline Bookings',
-    icon: '📝',
-    description: 'Record manual/offline ride bookings',
+    title: 'Smart Bookings',
+    description: 'Intelligent booking system with offline capabilities',
     route: '/offline-bookings',
     isActive: true,
-    featureId: 'offline-bookings'
+    featureId: 'offline-bookings',
+    gradient: 'from-emerald-600 via-emerald-500 to-teal-400',
+    icon: '📱',
+    category: 'core',
+    stats: { label: 'Daily Bookings', value: '156', trend: '+8%' }
   },
   {
     id: 'database',
-    title: 'Database',
-    icon: '🗂️',
-    description: 'Manage staff, pilots, and customer records',
+    title: 'Data Hub',
+    description: 'Centralized data management and analytics platform',
     route: '/database',
     isActive: true,
-    featureId: 'database-management'
+    featureId: 'database-management',
+    gradient: 'from-purple-600 via-purple-500 to-indigo-400',
+    icon: '🗃️',
+    category: 'management',
+    stats: { label: 'Records', value: '2.4K', trend: '+15%' }
   },
   {
     id: 'driver-induction',
-    title: 'Driver Induction',
-    icon: '📋',
-    description: 'Enter and manage full driver profiles',
+    title: 'Driver Onboarding',
+    description: 'Streamlined driver registration and verification',
     route: '/driver-induction',
     isActive: true,
-    featureId: 'driver-induction'
+    featureId: 'driver-induction',
+    gradient: 'from-orange-600 via-orange-500 to-yellow-400',
+    icon: '👤',
+    category: 'management',
+    stats: { label: 'New Drivers', value: '12', trend: '+3%' }
   },
   {
     id: 'trip-details',
-    title: 'Driver Trip Details',
-    icon: '🚘',
-    description: 'View and log trip records for each driver',
+    title: 'Trip Analytics',
+    description: 'Comprehensive trip monitoring and performance insights',
     route: '/trip-details',
     isActive: true,
-    featureId: 'trip-details'
+    featureId: 'trip-details',
+    gradient: 'from-pink-600 via-pink-500 to-rose-400',
+    icon: '📊',
+    category: 'analytics',
+    stats: { label: 'Trips Today', value: '89', trend: '+22%' }
   },
-  
   {
     id: 'charging-tracker',
-    title: 'Vehicle Charging Tracker',
-    icon: '⚡',
-    description: 'Monitor charging status of vehicles',
+    title: 'Energy Management',
+    description: 'Advanced charging optimization and energy monitoring',
     route: '/charging-tracker',
     isActive: true,
-    featureId: 'charging-tracker'
+    featureId: 'charging-tracker',
+    gradient: 'from-green-600 via-green-500 to-lime-400',
+    icon: '⚡',
+    category: 'operations',
+    stats: { label: 'Charging Ports', value: '16', trend: '+5%' }
   },
-   {
+  {
     id: 'attendance',
-    title: 'Attendance',
-    icon: '🕒',
-    description: 'Track employee & pilot attendance',
+    title: 'Workforce',
+    description: 'Smart attendance and workforce management',
     route: '/attendance',
     isActive: false,
-    featureId: 'attendance'
+    featureId: 'attendance',
+    gradient: 'from-slate-600 via-slate-500 to-gray-400',
+    icon: '🕒',
+    category: 'management',
+    stats: { label: 'Present Today', value: '47', trend: '92%' }
   }
 ];
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { canAccessFeature, user } = useRoleAccess();
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  // Update time every second
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Filter platforms based on user role and permissions
   const accessiblePlatforms = useMemo(() => {
@@ -100,152 +130,163 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Hero Section */}
+    <div className="min-h-screen bg-black relative overflow-hidden">
+      {/* Animated background */}
+      <div className="absolute inset-0">
+        {/* Dynamic grid background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-gray-900 to-black">
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(59,130,246,0.03)_1px,transparent_1px)] bg-[size:72px_72px]"></div>
+        </div>
+        
+        {/* Floating orbs */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
+        <div className="absolute top-3/4 left-1/2 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl animate-pulse" style={{animationDelay: '4s'}}></div>
+      </div>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-6 py-8">
+        {/* Header Section */}
         <div className="text-center mb-16">
+          {/* Logo and Branding */}
           <div className="flex items-center justify-center gap-6 mb-8">
-            <div className="relative">
-              <img src="/favicon.ico" alt="EVZIP Logo" className="w-20 h-20" />
-              <div className="absolute -top-1 -right-1 w-6 h-6 bg-accent rounded-full animate-pulse"></div>
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-600 rounded-3xl blur-xl opacity-30 group-hover:opacity-50 transition-opacity duration-500 animate-pulse"></div>
+              <div className="relative bg-gradient-to-br from-gray-900 to-black border border-gray-700 rounded-3xl p-2 shadow-2xl">
+                <Zap className="w-24 h-24 text-green-400 mb-2" fill="currentColor" stroke="none" />
+              </div>
             </div>
             <div className="text-left">
-              <h1 className="text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">
+              <h1 className="text-7xl font-black bg-gradient-to-r from-white via-blue-200 to-purple-200 bg-clip-text text-transparent tracking-tight">
                 EVZIP
               </h1>
-              <p className="text-xl text-accent font-bold tracking-wide">EVCORE Platform</p>
+              <div className="text-2xl text-blue-400 font-bold tracking-wider">EVCORE Platform</div>
             </div>
           </div>
-          <div className="max-w-3xl mx-auto">
-            <p className="text-2xl text-primary/80 font-medium mb-4">
-              Streamline your electric vehicle operations
-            </p>
-            <p className="text-lg text-muted-foreground">
-              Comprehensive fleet management powered by sustainable technology
-            </p>
-            {user && (
-              <div className="mt-6">
-                <Badge variant="outline" className="text-lg px-4 py-2">
-                  Welcome back, {user.role.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                </Badge>
-                <p className="text-sm text-muted-foreground mt-2">
-                  You have access to {accessiblePlatforms.length} of {subPlatforms.length} features
-                </p>
+
+          {/* Live Status Bar */}
+          <div className="bg-gradient-to-r from-gray-900/80 to-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 mb-8">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                  <span className="text-green-400 font-semibold">System Online</span>
+                </div>
+                <div className="text-gray-300">
+                  {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                </div>
+                {user && (
+                  <div className="text-blue-400 font-medium">
+                    Welcome, {user.role.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                  </div>
+                )}
               </div>
-            )}
+              <div className="flex items-center gap-4 text-sm text-gray-400">
+                <span>{accessiblePlatforms.length} Active Modules</span>
+                <div className="w-1 h-1 bg-gray-500 rounded-full"></div>
+                <span>Real-time Sync</span>
+                <div className="w-1 h-1 bg-gray-500 rounded-full"></div>
+                <span>99.9% Uptime</span>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Platform Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {accessiblePlatforms.map((platform) => (
-            <Card 
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+          {accessiblePlatforms.map((platform, index) => (
+            <div
               key={platform.id}
-              className={`group relative overflow-hidden transition-all duration-500 hover:scale-[1.02] cursor-pointer border-0 shadow-lg hover:shadow-2xl ${
-                platform.isActive 
-                  ? 'bg-white/80 backdrop-blur-sm hover:bg-white/90' 
-                  : 'bg-white/40 opacity-75 cursor-not-allowed hover:scale-100'
-              }`}
+              className="group relative transform hover:scale-105 transition-all duration-500 cursor-pointer"
               onClick={() => handleCardClick(platform)}
             >
-              {/* Gradient Background */}
-              <div className="absolute inset-0 bg-gradient-to-br from-accent/10 via-transparent to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              {/* Card glow effect */}
+              <div className={`absolute inset-0 bg-gradient-to-r ${platform.gradient} rounded-3xl blur-xl opacity-0 group-hover:opacity-20 transition-opacity duration-500`}></div>
               
-              {/* Electric Circuit Pattern */}
-              <div className="absolute top-0 right-0 w-24 h-24 opacity-5">
-                <svg viewBox="0 0 100 100" className="w-full h-full">
-                  <path d="M20,20 L80,20 L80,40 L60,40 L60,60 L80,60 L80,80" 
-                        stroke="currentColor" 
-                        strokeWidth="2" 
-                        fill="none" 
-                        className="text-accent"/>
-                </svg>
-              </div>
-
-              <CardHeader className="relative z-10 text-center pb-4">
-                <div className="relative mb-6">
-                  <div className={`text-6xl transition-transform duration-300 group-hover:scale-110 ${
-                    platform.isActive ? 'filter drop-shadow-lg' : 'grayscale'
-                  }`}>
-                    {platform.icon}
-                  </div>
-                  {platform.isActive && (
-                    <div className="absolute -top-2 -right-2 w-4 h-4 bg-accent rounded-full animate-pulse"></div>
-                  )}
+              <Card className="relative bg-gradient-to-br from-gray-900 to-gray-800 border-gray-700 rounded-3xl overflow-hidden shadow-2xl h-full">
+                {/* Gradient overlay */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${platform.gradient} opacity-5 group-hover:opacity-10 transition-opacity duration-500`}></div>
+                
+                {/* Status indicator */}
+                <div className="absolute top-6 right-6 flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                  <span className="text-xs text-green-400 font-medium">ACTIVE</span>
                 </div>
-                <CardTitle className={`text-xl font-bold transition-colors duration-300 ${
-                  platform.isActive 
-                    ? 'text-primary group-hover:text-accent' 
-                    : 'text-muted-foreground'
-                }`}>
-                  {platform.title}
-                </CardTitle>
-              </CardHeader>
-              
-              <CardContent className="relative z-10 text-center pb-6">
-                <CardDescription className={`text-base mb-6 leading-relaxed ${
-                  platform.isActive 
-                    ? 'text-primary/70' 
-                    : 'text-muted-foreground/70'
-                }`}>
-                  {platform.description}
-                </CardDescription>
-              </CardContent>
-              
-              {/* Bottom accent line */}
-              {platform.isActive && (
-                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-accent via-accent/80 to-transparent"></div>
-              )}
-            </Card>
+
+                <CardContent className="relative z-10 p-8 h-full flex flex-col">
+                  {/* Icon */}
+                  <div className="mb-6">
+                    <div className="text-6xl mb-4 transform group-hover:scale-110 transition-transform duration-300">
+                      {platform.icon}
+                    </div>
+                    <div className={`w-16 h-1 bg-gradient-to-r ${platform.gradient} rounded-full`}></div>
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-grow">
+                    <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-blue-300 transition-colors duration-300">
+                      {platform.title}
+                    </h3>
+                    <p className="text-gray-400 text-base leading-relaxed mb-6">
+                      {platform.description}
+                    </p>
+                  </div>
+
+                  {/* Stats */}
+                  {platform.stats && (
+                    <div className="bg-gray-800/50 rounded-2xl p-4 mb-6 border border-gray-700">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-sm text-gray-400">{platform.stats.label}</div>
+                          <div className="text-2xl font-bold text-white">{platform.stats.value}</div>
+                        </div>
+                        <div className="text-green-400 text-sm font-medium">
+                          {platform.stats.trend}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Action button */}
+                  <div className={`bg-gradient-to-r ${platform.gradient} p-0.5 rounded-2xl group-hover:shadow-lg transition-all duration-300`}>
+                    <div className="bg-gray-900 rounded-2xl px-6 py-3 flex items-center justify-between group-hover:bg-gray-800 transition-colors duration-300">
+                      <span className="text-white font-medium">Launch Module</span>
+                      <svg className="w-5 h-5 text-white group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           ))}
         </div>
 
-        {/* Footer Info */}
-        <div className="mt-20 text-center">
-          <div className="relative bg-white/60 backdrop-blur-sm rounded-3xl p-10 shadow-xl border border-accent/20 overflow-hidden">
-            {/* Background Pattern */}
-            <div className="absolute inset-0 opacity-5">
-              <div className="absolute top-0 left-0 w-full h-full">
-                <svg viewBox="0 0 400 200" className="w-full h-full">
-                  <defs>
-                    <pattern id="circuit" patternUnits="userSpaceOnUse" width="40" height="40">
-                      <path d="M0,20 L40,20 M20,0 L20,40" stroke="currentColor" strokeWidth="1" className="text-accent"/>
-                      <circle cx="20" cy="20" r="2" fill="currentColor" className="text-accent"/>
-                    </pattern>
-                  </defs>
-                  <rect width="100%" height="100%" fill="url(#circuit)"/>
-                </svg>
+        {/* Footer Stats */}
+        <div className="bg-gradient-to-r from-gray-900/80 to-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-3xl p-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="text-center">
+              <div className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent mb-2">
+                2.4K+
               </div>
+              <div className="text-gray-400">Total Records</div>
             </div>
-            
-            <div className="relative z-10">
-              <div className="flex items-center justify-center gap-3 mb-4">
-                <div className="w-8 h-8 bg-gradient-to-br from-accent to-accent/80 rounded-xl flex items-center justify-center">
-                  <span className="text-white font-bold">⚡</span>
-                </div>
-                <h3 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                  EVZIP EVCORE Platform
-                </h3>
+            <div className="text-center">
+              <div className="text-4xl font-bold bg-gradient-to-r from-green-400 to-emerald-600 bg-clip-text text-transparent mb-2">
+                24/7
               </div>
-              <p className="text-lg text-primary/80 font-medium mb-6">
-                Powering sustainable transportation through intelligent fleet management
-              </p>
-              
-              {/* Feature Highlights */}
-              <div className="flex flex-wrap justify-center gap-6 text-sm">
-                <div className="flex items-center gap-2 text-primary/70">
-                  <div className="w-2 h-2 bg-accent rounded-full"></div>
-                  <span className="font-medium">Real-time Tracking</span>
-                </div>
-                <div className="flex items-center gap-2 text-primary/70">
-                  <div className="w-2 h-2 bg-accent rounded-full"></div>
-                  <span className="font-medium">Smart Analytics</span>
-                </div>
-                <div className="flex items-center gap-2 text-primary/70">
-                  <div className="w-2 h-2 bg-accent rounded-full"></div>
-                  <span className="font-medium">Sustainable Operations</span>
-                </div>
+              <div className="text-gray-400">System Monitoring</div>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent mb-2">
+                99.9%
               </div>
+              <div className="text-gray-400">Uptime</div>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl font-bold bg-gradient-to-r from-orange-400 to-red-600 bg-clip-text text-transparent mb-2">
+                156
+              </div>
+              <div className="text-gray-400">Active Users</div>
             </div>
           </div>
         </div>

@@ -93,27 +93,21 @@ export const NavigationSidebar: React.FC = () => {
       <SidebarMenuButton 
         asChild
         isActive={isActive(item.url)}
-        className="mx-2 h-auto p-3"
+        className="mx-2 h-auto p-0"
       >
         <Link 
           to={item.url}
           onClick={handleLinkClick}
-          className={`flex items-center gap-3 w-full transition-all ${
+          className={`flex items-center gap-4 w-full p-3 rounded-2xl transition-all duration-200 ${
             isActive(item.url) 
-              ? 'bg-blue-600 text-white border border-blue-500 rounded-lg' 
-              : 'text-white hover:bg-gray-800 hover:text-blue-300 rounded-lg'
+              ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/25' 
+              : 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
           }`}
         >
-          <item.icon className={`w-5 h-5 shrink-0 ${
-            isActive(item.url) ? 'text-white' : 'text-white'
-          }`} />
+          <item.icon className="w-5 h-5 shrink-0" />
           <div className="text-left flex-1">
-            <div className={`font-semibold text-sm ${
-              isActive(item.url) ? 'text-white' : 'text-white'
-            }`}>{item.title}</div>
-            <div className={`text-xs font-medium ${
-              isActive(item.url) ? 'text-blue-100' : 'text-gray-300'
-            }`}>{item.description}</div>
+            <div className="font-semibold text-sm">{item.title}</div>
+            <div className="text-xs opacity-80">{item.description}</div>
           </div>
         </Link>
       </SidebarMenuButton>
@@ -121,59 +115,71 @@ export const NavigationSidebar: React.FC = () => {
   );
 
   return (
-    <Sidebar className="border-r border-gray-200 bg-gray-900 sidebar-no-scrollbar">
+    <Sidebar className="border-r border-gray-700/50 bg-gradient-to-br from-gray-900 via-gray-800 to-black sidebar-no-scrollbar backdrop-blur-xl">
       <SidebarHeader>
-        <div className="p-4 border-b border-gray-700">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
-              <span className="text-xl font-bold text-white">E</span>
+        <div className="p-6 border-b border-gray-700/50">
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                <span className="text-xl font-bold text-white">⚡</span>
+              </div>
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full animate-pulse"></div>
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white">
+              <h2 className="text-xl font-black bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
                 EVZIP
               </h2>
-              <p className="text-sm font-medium text-white">
+              <p className="text-sm text-blue-400 font-medium">
                 EVCORE Platform
               </p>
             </div>
           </div>
           {user && (
-            <div className="bg-gray-800 rounded-lg p-3 mt-4">
-              <p className="text-sm font-bold text-white">
-                {user.role === 'admin' ? 'Administrator' : 'Supervisor'}
-              </p>
-              <p className="text-xs font-medium text-white">
-                Access Level: {user.role}
-              </p>
+            <div className="mt-6 bg-gradient-to-r from-gray-800/50 to-gray-700/50 rounded-2xl p-4 border border-gray-600/30">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
+                  <span className="text-white text-sm font-bold">
+                    {user.role.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-white">
+                    {user.role === 'admin' ? 'Administrator' : 'Supervisor'}
+                  </p>
+                  <p className="text-xs text-blue-400">
+                    Access Level: {user.role}
+                  </p>
+                </div>
+              </div>
             </div>
           )}
         </div>
       </SidebarHeader>
       
-      <SidebarContent className="overflow-y-auto sidebar-no-scrollbar">
+      <SidebarContent className="overflow-y-auto sidebar-no-scrollbar py-6">
         {/* Core Platform */}
         <SidebarGroup>
           <div className="px-4 py-2">
-            <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
               Core Platform
             </h3>
           </div>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-2">
               {menuItems.map(renderMenuItem)}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
         {/* System */}
-        <SidebarGroup>
+        <SidebarGroup className="mt-8">
           <div className="px-4 py-2">
-            <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
               System
             </h3>
           </div>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-2">
               {systemItems
                 .filter(item => {
                   // Only show Admin Settings to super admins
@@ -189,21 +195,21 @@ export const NavigationSidebar: React.FC = () => {
       </SidebarContent>
 
       <SidebarFooter>
-        <div className="p-4 border-t border-gray-700">
+        <div className="p-4 border-t border-gray-700/50">
           <Button 
             onClick={handleLogout}
             variant="ghost"
-            className="w-full justify-start gap-3 text-white hover:text-red-300 hover:bg-red-900/20 rounded-lg h-auto p-3"
+            className="w-full justify-start gap-4 text-gray-300 hover:text-red-300 hover:bg-red-900/20 rounded-2xl h-auto p-3 transition-all duration-200"
           >
-            <LogOut className="w-5 h-5 text-white" />
-            <div className="text-left">
-              <div className="font-semibold text-sm text-white">Sign Out</div>
-              <div className="text-xs font-medium text-white">Exit platform</div>
+            <LogOut className="w-5 h-5" />
+            <div className="text-left flex-1">
+              <div className="font-semibold text-sm">Sign Out</div>
+              <div className="text-xs opacity-80">Exit platform</div>
             </div>
           </Button>
-          <div className="text-center mt-3">
-            <p className="text-xs font-medium text-white">
-              EVCORE Platform v1.0
+          <div className="text-center mt-4">
+            <p className="text-xs text-gray-500">
+              EVCORE Platform v3.0
             </p>
           </div>
         </div>

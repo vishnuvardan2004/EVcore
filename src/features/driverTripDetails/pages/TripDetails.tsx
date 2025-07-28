@@ -1,18 +1,18 @@
 
 import React from 'react';
 import { PageLayout } from '../../../shared/components/PageLayout';
-import { TripDetailsProvider } from '../../../contexts/TripDetailsContext';
-import { TripDetailsForm } from '../components/TripDetailsForm';
+import { TripDetailsProvider } from '../contexts/EnhancedTripDetailsContext';
+import { EnhancedTripDetailsForm } from '../components/EnhancedTripDetailsForm';
 
 const TripDetails = () => {
   return (
     <TripDetailsProvider>
       <PageLayout 
-        title="🚘 Driver Trip Details" 
-        subtitle="Complete trip logging and shift management system"
+        title="� Trip Analytics" 
+        subtitle="Professional driver performance management system"
       >
-        <div className="max-w-4xl mx-auto">
-          <TripDetailsForm />
+        <div className="max-w-7xl mx-auto">
+          <EnhancedTripDetailsForm />
         </div>
       </PageLayout>
     </TripDetailsProvider>
