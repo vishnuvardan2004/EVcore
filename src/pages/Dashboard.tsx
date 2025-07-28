@@ -26,13 +26,13 @@ const subPlatforms: SubPlatform[] = [
     featureId: 'vehicle-deployment'
   },
   {
-    id: 'attendance',
-    title: 'Attendance',
-    icon: '🕒',
-    description: 'Track employee & pilot attendance',
-    route: '/attendance',
+    id: 'offline-bookings',
+    title: 'Offline Bookings',
+    icon: '📝',
+    description: 'Record manual/offline ride bookings',
+    route: '/offline-bookings',
     isActive: true,
-    featureId: 'attendance'
+    featureId: 'offline-bookings'
   },
   {
     id: 'database',
@@ -61,15 +61,7 @@ const subPlatforms: SubPlatform[] = [
     isActive: true,
     featureId: 'trip-details'
   },
-  {
-    id: 'offline-bookings',
-    title: 'Offline Bookings',
-    icon: '📝',
-    description: 'Record manual/offline ride bookings',
-    route: '/offline-bookings',
-    isActive: true,
-    featureId: 'offline-bookings'
-  },
+  
   {
     id: 'charging-tracker',
     title: 'Vehicle Charging Tracker',
@@ -78,6 +70,15 @@ const subPlatforms: SubPlatform[] = [
     route: '/charging-tracker',
     isActive: true,
     featureId: 'charging-tracker'
+  },
+   {
+    id: 'attendance',
+    title: 'Attendance',
+    icon: '🕒',
+    description: 'Track employee & pilot attendance',
+    route: '/attendance',
+    isActive: false,
+    featureId: 'attendance'
   }
 ];
 

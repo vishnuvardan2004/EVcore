@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { PageLayout } from '../../../components/PageLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../shared/components/ui/tabs';
 import { AirportBookingForm } from '../components/AirportBookingForm';
 import { RentalPackageForm } from '../components/RentalPackageForm';
@@ -81,14 +80,23 @@ const OfflineBookings = () => {
       default:
         return (
           <Tabs defaultValue="airport" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="airport" className="gap-2">
+            <TabsList className="grid w-full grid-cols-3 bg-blue-50 border border-blue-200">
+              <TabsTrigger 
+                value="airport" 
+                className="gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-blue-600 data-[state=active]:text-white"
+              >
                 ✈️ Airport Bookings
               </TabsTrigger>
-              <TabsTrigger value="rental" className="gap-2">
+              <TabsTrigger 
+                value="rental" 
+                className="gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-blue-600 data-[state=active]:text-white"
+              >
                 🚕 Rental Package
               </TabsTrigger>
-              <TabsTrigger value="subscription" className="gap-2">
+              <TabsTrigger 
+                value="subscription" 
+                className="gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-blue-600 data-[state=active]:text-white"
+              >
                 📝 Subscription
               </TabsTrigger>
             </TabsList>
@@ -110,229 +118,231 @@ const OfflineBookings = () => {
   };
 
   return (
-    <PageLayout 
-      title="📝 Offline Bookings" 
-      subtitle="Complete booking management system"
-    >
-      <div className="relative flex h-full -mx-6 -my-6">
-        {/* Sidebar Navigation */}
-        <div className={cn(
-          "absolute left-0 top-0 h-full bg-white border-r border-gray-200 transition-all duration-300 ease-in-out z-10",
-          sidebarCollapsed ? "w-16" : "w-80"
-        )}>
-          {/* Collapse Toggle Button */}
-          <div className="flex justify-end p-2 border-b border-gray-200">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="h-8 w-8 p-0"
-            >
-              {sidebarCollapsed ? (
-                <ChevronRight className="w-4 h-4" />
-              ) : (
-                <ChevronLeft className="w-4 h-4" />
-              )}
-            </Button>
-          </div>
+    <div className="flex h-full">
+      {/* Offline Bookings Sidebar */}
+      <aside className={cn(
+        "bg-white border-r border-gray-200 shadow-sm transition-all duration-300 flex flex-col h-full",
+        sidebarCollapsed ? "w-16" : "w-80"
+      )}>
+        {/* Header */}
+        <div className="p-4 border-b border-gray-200">
+          {!sidebarCollapsed && (
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                <span className="text-white text-lg">📝</span>
+              </div>
+              <div>
+                <h3 className="font-bold text-lg text-gray-900">Offline Bookings</h3>
+                <p className="text-xs text-gray-500">Complete booking management</p>
+              </div>
+            </div>
+          )}
+          {sidebarCollapsed && (
+            <div className="flex justify-center">
+              <span className="text-2xl">📝</span>
+            </div>
+          )}
+        </div>
 
-          <div className="p-6 space-y-6">
-            {/* Dashboard Stats */}
-            {!sidebarCollapsed ? (
-              <div className="grid grid-cols-2 gap-4">
-            <Card className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-                  <Clock className="w-5 h-5 text-orange-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-gray-900">{stats.scheduledRides}</p>
-                  <p className="text-xs text-gray-600">Scheduled</p>
-                </div>
-              </div>
-            </Card>
-            
-            <Card className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                  <CheckCircle className="w-5 h-5 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-gray-900">{stats.completedToday}</p>
-                  <p className="text-xs text-gray-600">Today</p>
-                </div>
-              </div>
-            </Card>
-            
-            <Card className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <TrendingUp className="w-5 h-5 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-lg font-bold text-gray-900">₹{stats.totalRevenue.toLocaleString()}</p>
-                  <p className="text-xs text-gray-600">Revenue</p>
-                </div>
-              </div>
-            </Card>
-            
-            <Card className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <Car className="w-5 h-5 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-gray-900">{stats.activeVehicles}</p>
-                  <p className="text-xs text-gray-600">Active</p>
-                </div>
-              </div>
-            </Card>
-          </div>
-            ) : (
-              // Collapsed stats - show mini indicators
-              <div className="flex flex-col gap-2">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center cursor-pointer">
-                        <Clock className="w-5 h-5 text-orange-600" />
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent side="right">
-                      <p>{stats.scheduledRides} Scheduled Rides</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+        {/* Stats Section */}
+        <div className={cn("p-4", sidebarCollapsed ? "px-2" : "p-4")}>
+          {!sidebarCollapsed ? (
+            <div>
+              <h3 className="text-sm font-semibold text-blue-800 mb-3 flex items-center gap-2">
+                <TrendingUp className="w-4 h-4" />
+                Quick Stats
+              </h3>
+              <div className="grid grid-cols-2 gap-3">
+                <Card className="p-3 bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200 hover:shadow-md transition-shadow">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                      <Clock className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-xl font-bold text-orange-800">{stats.scheduledRides}</p>
+                      <p className="text-xs text-orange-600">Scheduled</p>
+                    </div>
+                  </div>
+                </Card>
                 
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center cursor-pointer">
-                        <CheckCircle className="w-5 h-5 text-green-600" />
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent side="right">
-                      <p>{stats.completedToday} Completed Today</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <Card className="p-3 bg-gradient-to-br from-green-50 to-green-100 border-green-200 hover:shadow-md transition-shadow">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+                      <CheckCircle className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-xl font-bold text-green-800">{stats.completedToday}</p>
+                      <p className="text-xs text-green-600">Today</p>
+                    </div>
+                  </div>
+                </Card>
                 
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center cursor-pointer">
-                        <TrendingUp className="w-5 h-5 text-blue-600" />
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent side="right">
-                      <p>₹{stats.totalRevenue.toLocaleString()} Revenue</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <Card className="p-3 bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 hover:shadow-md transition-shadow">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                      <TrendingUp className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-blue-800">₹{stats.totalRevenue.toLocaleString()}</p>
+                      <p className="text-xs text-blue-600">Revenue</p>
+                    </div>
+                  </div>
+                </Card>
                 
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center cursor-pointer">
-                        <Car className="w-5 h-5 text-purple-600" />
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent side="right">
-                      <p>{stats.activeVehicles} Active Vehicles</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <Card className="p-3 bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 hover:shadow-md transition-shadow">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
+                      <Car className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-xl font-bold text-purple-800">{stats.activeVehicles}</p>
+                      <p className="text-xs text-purple-600">Active</p>
+                    </div>
+                  </div>
+                </Card>
               </div>
-            )}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-500 rounded-xl flex items-center justify-center cursor-pointer hover:scale-105 transition-all duration-200 shadow-lg mx-auto">
+                      <Clock className="w-5 h-5 text-white" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">
+                    <p>{stats.scheduledRides} Scheduled Rides</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-500 rounded-xl flex items-center justify-center cursor-pointer hover:scale-105 transition-all duration-200 shadow-lg mx-auto">
+                      <CheckCircle className="w-5 h-5 text-white" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">
+                    <p>{stats.completedToday} Completed Today</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-500 rounded-xl flex items-center justify-center cursor-pointer hover:scale-105 transition-all duration-200 shadow-lg mx-auto">
+                      <TrendingUp className="w-5 h-5 text-white" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">
+                    <p>₹{stats.totalRevenue.toLocaleString()} Revenue</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-500 rounded-xl flex items-center justify-center cursor-pointer hover:scale-105 transition-all duration-200 shadow-lg mx-auto">
+                      <Car className="w-5 h-5 text-white" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">
+                    <p>{stats.activeVehicles} Active Vehicles</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          )}
+        </div>
 
-          {/* Navigation Menu */}
-          <div className="space-y-2">
-            {!sidebarCollapsed && (
-              <h3 className="text-sm font-semibold text-gray-900 mb-4">Booking Management</h3>
-            )}
+        {/* Navigation Menu */}
+        <nav className="flex-1 p-2">
+          <ul className="space-y-1">
             {sidebarItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeView === item.id;
               
-              const ButtonContent = (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveView(item.id as any)}
-                  className={cn(
-                    "w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200",
-                    sidebarCollapsed ? "justify-center" : "",
-                    isActive 
-                      ? 'bg-blue-50 border-l-4 border-blue-500 text-blue-700' 
-                      : 'hover:bg-gray-50 text-gray-700'
-                  )}
-                >
-                  <div className={cn(
-                    "w-10 h-10 rounded-lg flex items-center justify-center",
-                    isActive ? 'bg-blue-100' : 'bg-gray-100'
-                  )}>
-                    <Icon className={cn(
-                      "w-5 h-5",
-                      isActive ? 'text-blue-600' : 'text-gray-600'
-                    )} />
-                  </div>
-                  {!sidebarCollapsed && (
-                    <div className="flex-1 text-left">
-                      <div className="flex items-center justify-between">
-                        <p className="font-medium">{item.label}</p>
-                        {item.count && (
-                          <Badge variant="secondary" className="text-xs">
-                            {item.count}
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="text-xs text-gray-500">{item.description}</p>
-                    </div>
-                  )}
-                </button>
-              );
-
-              if (sidebarCollapsed) {
-                return (
-                  <TooltipProvider key={item.id}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        {ButtonContent}
-                      </TooltipTrigger>
-                      <TooltipContent side="right">
-                        <div className="text-sm">
-                          <p className="font-medium">{item.label}</p>
-                          <p className="text-xs text-gray-500">{item.description}</p>
+              return (
+                <li key={item.id}>
+                  <Button
+                    variant="ghost"
+                    onClick={() => setActiveView(item.id as any)}
+                    className={cn(
+                      "w-full justify-start gap-3 h-auto p-3 transition-all",
+                      isActive 
+                        ? "bg-blue-50 text-blue-700 border border-blue-200" 
+                        : "text-gray-700 hover:bg-gray-50 hover:text-gray-900",
+                      sidebarCollapsed ? "px-2 justify-center" : ""
+                    )}
+                    title={sidebarCollapsed ? item.label : undefined}
+                  >
+                    <Icon className={cn("shrink-0", sidebarCollapsed ? "w-5 h-5" : "w-5 h-5")} />
+                    {!sidebarCollapsed && (
+                      <div className="text-left flex-1">
+                        <div className="flex items-center justify-between">
+                          <div className="font-medium text-sm">{item.label}</div>
                           {item.count && (
-                            <p className="text-xs mt-1">
-                              <Badge variant="secondary" className="text-xs">
-                                {item.count}
-                              </Badge>
-                            </p>
+                            <Badge variant="secondary" className="text-xs">
+                              {item.count}
+                            </Badge>
                           )}
                         </div>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                );
-              }
-
-              return ButtonContent;
+                        <div className="text-xs opacity-70">{item.description}</div>
+                      </div>
+                    )}
+                  </Button>
+                </li>
+              );
             })}
-          </div>
+          </ul>
+        </nav>
+
+        {/* Footer */}
+        <div className="p-4 border-t border-gray-200">
+          {!sidebarCollapsed && (
+            <div className="text-center">
+              <p className="text-xs text-gray-500">
+                Offline Bookings v2.0
+              </p>
+            </div>
+          )}
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col bg-gray-50">
+        {/* Header with toggle button */}
+        <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              {sidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Offline Bookings</h1>
+              <p className="text-gray-600 text-sm">Complete booking management system</p>
+            </div>
           </div>
         </div>
-
-        {/* Main Content Area */}
-        <div className={cn(
-          "flex-1 p-6 transition-all duration-300",
-          sidebarCollapsed ? "ml-16" : "ml-80"
-        )}>
+        
+        {/* Page Content */}
+        <div className="flex-1 p-6 overflow-auto">
           <div className="max-w-6xl mx-auto">
-            {renderContent()}
+            <div className="bg-white rounded-2xl shadow-sm border border-blue-100 p-6">
+              {renderContent()}
+            </div>
           </div>
         </div>
       </div>
-    </PageLayout>
+    </div>
   );
 };
 

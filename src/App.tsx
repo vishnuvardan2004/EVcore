@@ -2,7 +2,6 @@ import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 // EVCORE Platform - Main Application Entry Point
 import Dashboard from './pages/Dashboard';
-import Database from './pages/Database';
 import VehicleTracker from './features/vehicleDeployment/pages/VehicleTracker';
 import RideHistory from './features/vehicleDeployment/pages/RideHistory';
 import LiveStatus from './features/vehicleDeployment/pages/LiveStatus';
@@ -13,6 +12,8 @@ import { DriverInduction } from './features/driverInduction';
 import { TripDetails } from './features/driverTripDetails';
 import { OfflineBookings } from './features/offlineBookings';
 import { 
+  DatabaseLayout,
+  DatabaseDashboard,
   VehicleManagement, 
   PilotManagement, 
   CustomerManagement, 
@@ -63,12 +64,16 @@ const AppContent = () => {
             <Route path="/trip-details" element={<TripDetails />} />
             <Route path="/offline-bookings" element={<OfflineBookings />} />
             <Route path="/driver-induction" element={<DriverInduction />} />
-            <Route path="/database" element={<Database />} />
-            <Route path="/database/vehicles" element={<VehicleManagement />} />
-            <Route path="/database/pilots" element={<PilotManagement />} />
-            <Route path="/database/customers" element={<CustomerManagement />} />
-            <Route path="/database/staff" element={<EmployeeManagement />} />
-            <Route path="/database/analytics" element={<DataAnalytics />} />
+            
+            {/* Database Management Routes with Sidebar Layout */}
+            <Route path="/database/*" element={<DatabaseLayout />}>
+              <Route index element={<DatabaseDashboard />} />
+              <Route path="vehicles" element={<VehicleManagement />} />
+              <Route path="pilots" element={<PilotManagement />} />
+              <Route path="customers" element={<CustomerManagement />} />
+              <Route path="staff" element={<EmployeeManagement />} />
+              <Route path="analytics" element={<DataAnalytics />} />
+            </Route>
           </Routes>
         </MainLayout>
       </div>

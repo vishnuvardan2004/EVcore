@@ -13,7 +13,9 @@ import {
   Users,
   UserCheck,
   BarChart3,
-  Settings
+  Settings,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -89,9 +91,16 @@ const sidebarItems = [
 interface SidebarContentProps {
   currentPath: string;
   onItemClick?: () => void;
+  collapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
-const SidebarContent: React.FC<SidebarContentProps> = ({ currentPath, onItemClick }) => {
+const SidebarContent: React.FC<SidebarContentProps> = ({ 
+  currentPath, 
+  onItemClick, 
+  collapsed = false,
+  onToggleCollapse 
+}) => {
   const [expandedItems, setExpandedItems] = useState<string[]>(['Asset Management', 'Resource Management']);
 
   const toggleExpanded = (title: string) => {
@@ -108,11 +117,22 @@ const SidebarContent: React.FC<SidebarContentProps> = ({ currentPath, onItemClic
     const isExpanded = expandedItems.includes(item.title);
 
     if (hasSubItems) {
+      if (collapsed) {
+        // Show collapsed group item with tooltip
+        return (
+          <div key={item.title} className="mb-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-500 rounded-xl flex items-center justify-center cursor-pointer hover:scale-105 transition-all duration-200 shadow-lg mx-auto hover:shadow-xl">
+              <item.icon className="w-5 h-5 text-white" />
+            </div>
+          </div>
+        );
+      }
+
       return (
         <div key={item.title} className="space-y-1">
           <Button
             variant="ghost"
-            className="w-full justify-start text-left font-medium"
+            className="w-full justify-start text-left font-medium text-blue-700 hover:bg-blue-100"
             onClick={() => toggleExpanded(item.title)}
           >
             <item.icon className="w-4 h-4 mr-3" />
@@ -128,16 +148,19 @@ const SidebarContent: React.FC<SidebarContentProps> = ({ currentPath, onItemClic
                     to={subItem.href}
                     onClick={onItemClick}
                     className={cn(
-                      "flex items-center w-full px-3 py-2 text-sm rounded-md transition-colors",
+                      "flex items-center w-full px-3 py-2 text-sm rounded-xl transition-all duration-200 hover:scale-[1.02]",
                       isSubActive
-                        ? "bg-blue-100 text-blue-900 font-medium"
-                        : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                        ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg transform scale-[1.02]"
+                        : "text-blue-600 hover:bg-blue-100 bg-white/50"
                     )}
                   >
                     <subItem.icon className="w-4 h-4 mr-3" />
                     <div>
-                      <div>{subItem.title}</div>
-                      <div className="text-xs text-gray-500">{subItem.description}</div>
+                      <div className="font-medium">{subItem.title}</div>
+                      <div className={cn(
+                        "text-xs",
+                        isSubActive ? "text-blue-100" : "text-blue-400"
+                      )}>{subItem.description}</div>
                     </div>
                   </Link>
                 );
@@ -148,35 +171,79 @@ const SidebarContent: React.FC<SidebarContentProps> = ({ currentPath, onItemClic
       );
     }
 
+    if (collapsed) {
+      // Show collapsed single item
+      return (
+        <Link
+          key={item.href}
+          to={item.href}
+          onClick={onItemClick}
+          className="block mb-3"
+        >
+          <div className={cn(
+            "w-12 h-12 rounded-xl flex items-center justify-center cursor-pointer hover:scale-105 transition-all duration-200 shadow-lg mx-auto hover:shadow-xl",
+            isActive
+              ? "bg-gradient-to-br from-blue-500 to-blue-600 shadow-xl"
+              : "bg-gradient-to-br from-blue-400 to-blue-500"
+          )}>
+            <item.icon className="w-5 h-5 text-white" />
+          </div>
+        </Link>
+      );
+    }
+
     return (
       <Link
         key={item.href}
         to={item.href}
         onClick={onItemClick}
         className={cn(
-          "flex items-center w-full px-3 py-2 rounded-md transition-colors",
+          "flex items-center w-full px-3 py-2 rounded-xl transition-all duration-200 hover:scale-[1.02]",
           isActive
-            ? "bg-blue-100 text-blue-900 font-medium"
-            : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+            ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg transform scale-[1.02]"
+            : "text-blue-700 hover:bg-blue-100 bg-white/50"
         )}
       >
         <item.icon className="w-4 h-4 mr-3" />
         <div>
-          <div>{item.title}</div>
-          <div className="text-xs text-gray-500">{item.description}</div>
+          <div className="font-medium">{item.title}</div>
+          <div className={cn(
+            "text-xs",
+            isActive ? "text-blue-100" : "text-blue-500"
+          )}>{item.description}</div>
         </div>
       </Link>
     );
   };
 
   return (
-    <div className="h-full bg-white border-r border-gray-200">
-      <div className="p-6 pl-0">
-        <div className="flex items-center gap-2 mb-6 pl-6">
-          <Database className="w-6 h-6 text-blue-600" />
-          <h2 className="text-lg font-semibold">Master Database</h2>
+    <div className="h-full bg-gradient-to-b from-blue-50 to-white border-r border-blue-200 shadow-lg">
+      {/* Header Section */}
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 border-b border-blue-300">
+        <div className="flex items-center justify-center">
+          {!collapsed && (
+            <div className="flex items-center gap-2">
+              <Database className="w-6 h-6" />
+              <div>
+                <h2 className="text-lg font-bold">Master Database</h2>
+                <p className="text-blue-100 text-sm">Asset & Resource Management</p>
+              </div>
+            </div>
+          )}
+          {collapsed && (
+            <Database className="w-6 h-6" />
+          )}
         </div>
-        <nav className="space-y-2 pl-6">
+      </div>
+      
+      <div className={cn(
+        "p-4",
+        collapsed ? "px-2 py-6" : "p-4"
+      )}>
+        <nav className={cn(
+          "space-y-2",
+          collapsed ? "space-y-3" : "space-y-2"
+        )}>
           {sidebarItems.map(renderNavItem)}
         </nav>
       </div>
@@ -187,18 +254,25 @@ const SidebarContent: React.FC<SidebarContentProps> = ({ currentPath, onItemClic
 export const DatabaseLayout: React.FC = () => {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [localSidebarCollapsed, setLocalSidebarCollapsed] = useState(false);
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      {/* Desktop Sidebar */}
-      <div className="hidden md:flex md:w-80 md:flex-col md:ml-0">
-        <SidebarContent currentPath={location.pathname} />
+    <div className="flex h-full">
+      {/* Database Sidebar */}
+      <div className={cn(
+        "bg-white border-r border-gray-200 shadow-sm transition-all duration-300 flex flex-col h-full",
+        localSidebarCollapsed ? "w-16" : "w-80"
+      )}>
+        <SidebarContent 
+          currentPath={location.pathname}
+          collapsed={localSidebarCollapsed}
+        />
       </div>
 
       {/* Mobile Sidebar */}
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
         <SheetTrigger asChild>
-          <Button variant="ghost" size="icon" className="md:hidden fixed top-4 left-4 z-50">
+          <Button variant="ghost" size="icon" className="md:hidden fixed top-4 right-4 z-50">
             <Menu className="w-5 h-5" />
           </Button>
         </SheetTrigger>
@@ -210,11 +284,34 @@ export const DatabaseLayout: React.FC = () => {
         </SheetContent>
       </Sheet>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <main className="flex-1 overflow-auto">
-          <Outlet />
-        </main>
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col bg-gray-50">
+        {/* Header with toggle button */}
+        <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setLocalSidebarCollapsed(!localSidebarCollapsed)}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              {localSidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Master Database</h1>
+              <p className="text-gray-600 text-sm">Asset & Resource Management</p>
+            </div>
+          </div>
+        </div>
+        
+        {/* Main Content */}
+        <div className="flex-1 p-6 bg-gradient-to-br from-gray-50 to-blue-50/30 overflow-auto">
+          <div className="max-w-7xl mx-auto">
+            <div className="bg-white rounded-2xl shadow-sm border border-blue-100 p-6">
+              <Outlet />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
