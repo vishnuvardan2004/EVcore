@@ -55,24 +55,42 @@ export class MasterDatabase extends Dexie {
   private async populateSampleData() {
     // Simple sample data to provide basic counts
     try {
-      // Sample Vehicles - minimal data
+      // Sample Vehicles - updated to match Vehicle interface
       await this.vehicles.bulkAdd([
         {
           id: '1',
-          vin: 'EV001234567890123',
+          vehicleId: 'VEH001',
+          vinNumber: 'EV001234567890123',
           engineNumber: 'ENG001',
           registrationNumber: 'KA01AB1234',
-          model: 'Nexon EV',
-          styleClass: 'SUV',
+          registrationDate: '2023-01-15',
           brand: 'Tata',
-          type: 'Electric',
-          batteryNumber: 'BAT001',
-          tyreNumbers: ['TYR001', 'TYR002', 'TYR003', 'TYR004'],
-          chargerNumber: 'CHG001',
-          status: 'Available',
-          purchaseDate: '2023-01-15',
-          warrantyExpiry: '2026-01-15',
-          location: 'Bangalore Hub',
+          model: 'Nexon EV',
+          vehicleClass: 'SUV',
+          vehicleType: 'E4W',
+          fuelType: 'Electric',
+          batterySerialNumber: 'BAT001',
+          noOfTyres: 4,
+          tyreSerialNumbers: '["TYR001", "TYR002", "TYR003", "TYR004"]',
+          chargerSerialNumber: 'CHG001',
+          chargerType: 'Fast',
+          batteryCapacityKWh: 30.2,
+          chargingPortType: 'CCS2',
+          insuranceProvider: 'ICICI Lombard',
+          insurancePolicyNo: 'POL001234',
+          insuranceExpiryDate: '2025-01-15',
+          permitNumber: 'PRM001',
+          permitExpiryDate: '2025-12-31',
+          policeCertificateStatus: 'Verified',
+          rcFile: 'RC001.pdf',
+          pucStatus: 'Valid',
+          vehicleCondition: 'Good',
+          odometerReading: 5000,
+          locationAssigned: 'Bangalore Hub',
+          assignedPilotId: 'PIL001',
+          maintenanceDueDate: '2024-06-15',
+          lastServiceDate: '2024-01-15',
+          status: 'Active',
           createdAt: '2024-01-15T09:00:00Z',
           updatedAt: '2024-01-15T09:00:00Z',
           createdBy: 'system'
@@ -84,27 +102,36 @@ export class MasterDatabase extends Dexie {
         {
           id: '1',
           employeeId: 'EMP001',
+          fullName: 'John Doe',
           firstName: 'John',
           lastName: 'Doe',
+          gender: 'Male',
+          dateOfBirth: '1990-01-15',
+          contactNumber: '+91-9876543210',
+          emailId: 'john.doe@company.com',
+          aadharNumber: '****-****-1234',
+          panNumber: 'ABCDE1234F',
+          address: '123 Main Street, Koramangala, Bangalore',
+          city: 'Bangalore',
+          emergencyContact: 'Jane Doe - +91-9876543211',
+          maritalStatus: 'Married',
+          dateOfJoining: '2023-01-15',
+          employmentType: 'Full-Time',
+          designation: 'Operations Manager',
+          department: 'Operations',
+          shiftType: 'Morning',
+          workLocation: 'Bangalore Hub',
+          employeeStatus: 'Active',
+          salaryMode: 'Bank',
+          monthlySalary: 50000,
+          pfEligible: true,
+          backgroundCheckStatus: 'Cleared',
           email: 'john.doe@company.com',
           phone: '+91-9876543210',
           position: 'Operations Manager',
-          department: 'Operations',
           role: 'admin',
           hireDate: '2023-01-15',
           status: 'Active',
-          address: {
-            street: '123 Main St',
-            city: 'Bangalore',
-            state: 'Karnataka',
-            zipCode: '560001',
-            country: 'India'
-          },
-          emergencyContact: {
-            name: 'Jane Doe',
-            relationship: 'Spouse',
-            phone: '+91-9876543211'
-          },
           createdAt: '2024-01-15T09:00:00Z',
           updatedAt: '2024-01-15T09:00:00Z',
           createdBy: 'system'
@@ -139,15 +166,30 @@ export class MasterDatabase extends Dexie {
   }
 }
 
-// Database Service Class (Read-Only)
+// Database Service Class
 export class DatabaseService {
-  // Read operations only
+  // Read operations
   async getAll<T>(table: Table<T>): Promise<T[]> {
     return await table.toArray();
   }
 
   async getById<T>(table: Table<T>, id: string): Promise<T | undefined> {
     return await table.get(id);
+  }
+
+  // Write operations
+  async createVehicle(vehicleData: Omit<Vehicle, 'id' | 'createdAt' | 'updatedAt'>, createdBy: string): Promise<Vehicle> {
+    const now = new Date().toISOString();
+    const vehicle: Vehicle = {
+      ...vehicleData,
+      id: `vehicle_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      createdAt: now,
+      updatedAt: now,
+      createdBy
+    };
+    
+    await masterDb.vehicles.add(vehicle);
+    return vehicle;
   }
 
   async getDatabaseStats(): Promise<DatabaseStats> {

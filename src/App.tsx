@@ -14,12 +14,12 @@ import { OfflineBookings } from './features/offlineBookings';
 import { 
   DatabaseLayout,
   DatabaseDashboard,
-  VehicleManagement, 
   PilotManagement, 
   CustomerManagement, 
   EmployeeManagement, 
   DataAnalytics 
 } from './features/databaseManagement';
+import VehicleManagementSimple from './features/databaseManagement/components/VehicleManagementSimple';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './pages/Login';
 import { Toaster } from '@/components/ui/toaster';
@@ -68,10 +68,10 @@ const AppContent = () => {
             {/* Database Management Routes with Sidebar Layout */}
             <Route path="/database/*" element={<DatabaseLayout />}>
               <Route index element={<DatabaseDashboard />} />
-              <Route path="vehicles" element={<VehicleManagement />} />
+              <Route path="vehicles" element={<VehicleManagementSimple />} />
+              <Route path="employees" element={<EmployeeManagement />} />
               <Route path="pilots" element={<PilotManagement />} />
               <Route path="customers" element={<CustomerManagement />} />
-              <Route path="staff" element={<EmployeeManagement />} />
               <Route path="analytics" element={<DataAnalytics />} />
             </Route>
           </Routes>

@@ -36,14 +36,14 @@ export class MasterDatabase extends Dexie {
     
     this.version(1).stores({
       // Asset tables
-      vehicles: 'id, vin, registrationNumber, model, brand, type, status, location, createdBy',
+      vehicles: 'id, vehicleId, vinNumber, engineNumber, registrationNumber, model, brand, vehicleClass, vehicleType, fuelType, batterySerialNumber, chargerSerialNumber, chargerType, batteryCapacityKWh, chargingPortType, insuranceProvider, insurancePolicyNo, permitNumber, policeCertificateStatus, rcFile, pucStatus, vehicleCondition, odometerReading, locationAssigned, assignedPilotId, status, createdBy',
       chargingEquipment: 'id, equipmentNumber, model, brand, location, status, createdBy',
       electricalEquipment: 'id, equipmentNumber, type, brand, location, status, createdBy',
       itEquipment: 'id, equipmentNumber, type, brand, assignedTo, location, status, createdBy',
       infraFurniture: 'id, itemNumber, type, category, location, room, createdBy',
       
       // Resource tables
-      employees: 'id, employeeId, email, role, department, status, createdBy',
+      employees: 'id, employeeId, fullName, gender, emailId, contactNumber, aadharNumber, panNumber, city, maritalStatus, dateOfJoining, employmentType, designation, department, reportingManagerId, shiftType, workLocation, employeeStatus, salaryMode, monthlySalary, pfEligible, backgroundCheckStatus, createdBy',
       pilots: 'id, pilotId, employeeId, licenseNumber, status, createdBy',
       
       // System tables
@@ -306,7 +306,7 @@ export class DatabaseService {
     infraFurniture: InfraFurniture[];
   }> {
     const [vehicles, chargingEquipment, electricalEquipment, itEquipment, infraFurniture] = await Promise.all([
-      this.search(masterDb.vehicles, searchTerm, ['vin', 'registrationNumber', 'model', 'brand']),
+      this.search(masterDb.vehicles, searchTerm, ['vehicleId', 'vinNumber', 'registrationNumber', 'model', 'brand', 'engineNumber']),
       this.search(masterDb.chargingEquipment, searchTerm, ['equipmentNumber', 'model', 'brand', 'location']),
       this.search(masterDb.electricalEquipment, searchTerm, ['equipmentNumber', 'type', 'brand', 'location']),
       this.search(masterDb.itEquipment, searchTerm, ['equipmentNumber', 'type', 'brand', 'serialNumber']),

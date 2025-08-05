@@ -3,58 +3,31 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Textarea } from '@/components/ui/textarea';
 import { 
   Car, 
   Plus, 
   Search, 
-  Filter, 
-  Edit, 
-  Trash2, 
-  Download,
   RefreshCw,
   MapPin,
   Calendar,
-  Fuel,
-  Settings,
-  Battery,
-  Shield,
-  FileText,
-  User
+  Fuel
 } from 'lucide-react';
-import { databaseService } from '../services/database';
-import { useErrorHandler } from '../../../hooks/useErrorHandler';
+import { databaseService } from '../services/databaseSimple';
 import { Vehicle } from '../types';
-import { useAuth } from '@/contexts/AuthContext';
 
-type VehicleStatus = 'Active' | 'In Maintenance' | 'Idle';
-type VehicleClass = 'Hatchback' | 'Sedan' | 'Scooter' | 'SUV' | 'Truck' | 'Van';
-type VehicleType = 'E4W' | 'E2W' | 'Shuttle';
-type FuelType = 'Electric' | 'Hybrid' | 'NA';
-type ChargerType = 'Slow' | 'Fast';
-type PUCStatus = 'NA' | 'Valid' | 'Expired';
-type VehicleCondition = 'New' | 'Good' | 'Retired';
-type PoliceStatus = 'Pending' | 'Verified';
-
-export const VehicleManagement: React.FC = () => {
-  const { user } = useAuth();
-  const { handleSuccess, handleError } = useErrorHandler();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<VehicleStatus | 'all'>('all');
-  const [typeFilter, setTypeFilter] = useState<VehicleType | 'all'>('all');
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
-  const [formData, setFormData] = useState<Partial<Vehicle>>({});
+export const VehicleManagementSimple: React.FC = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [formData, setFormData] = useState<Partial<Vehicle>>({});
   const [saving, setSaving] = useState(false);
 
-  // Load vehicles on component mount
   useEffect(() => {
     fetchVehicles();
   }, []);
@@ -63,98 +36,34 @@ export const VehicleManagement: React.FC = () => {
     try {
       setLoading(true);
       const data = await databaseService.getVehicles();
-      setVehicles(data);
+      console.log('Fetched vehicles:', data);
+      setVehicles(data || []);
     } catch (error) {
       console.error('Error fetching vehicles:', error);
-      // Set empty array as fallback
       setVehicles([]);
-      handleError(error as Error);
     } finally {
       setLoading(false);
     }
   };
 
-  const canEdit = user?.role && ['super_admin', 'admin', 'leadership'].includes(user.role);
-  const canDelete = user?.role && ['super_admin', 'admin'].includes(user.role);
+  const filteredVehicles = vehicles.filter(vehicle => 
+    vehicle.registrationNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    vehicle.model?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    vehicle.brand?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-  const filteredVehicles = vehicles.filter(vehicle => {
-    const matchesSearch = vehicle.registrationNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         vehicle.model?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         vehicle.brand?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         vehicle.vehicleId?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || vehicle.status === statusFilter;
-    const matchesType = typeFilter === 'all' || vehicle.vehicleType === typeFilter;
-    return matchesSearch && matchesStatus && matchesType;
-  });
-
-  const handleSave = async () => {
-    try {
-      setSaving(true);
-      if (editingVehicle) {
-        await databaseService.updateVehicle(editingVehicle.id, formData, user?.email || 'system');
-        handleSuccess('Vehicle updated successfully');
-      } else {
-        // Ensure required fields are present for creation
-        const vehicleData = {
-          ...formData,
-          vehicleId: formData.vehicleId || `VEH${Date.now()}`,
-          vinNumber: formData.vinNumber || '',
-          registrationNumber: formData.registrationNumber || '',
-          brand: formData.brand || '',
-          model: formData.model || '',
-          status: formData.status || 'Active'
-        } as Omit<Vehicle, 'id' | 'createdAt' | 'updatedAt'>;
-        
-        await databaseService.createVehicle(vehicleData, user?.email || 'system');
-        handleSuccess('Vehicle created successfully');
-      }
-      setIsAddDialogOpen(false);
-      resetForm();
-      fetchVehicles();
-    } catch (error) {
-      handleError(error as Error);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!canDelete) return;
-    
-    if (confirm('Are you sure you want to delete this vehicle?')) {
-      try {
-        await databaseService.deleteVehicle(id, user?.email || 'system');
-        handleSuccess('Vehicle deleted successfully');
-        fetchVehicles();
-      } catch (error) {
-        handleError(error as Error);
-      }
-    }
-  };
-
-  const getStatusBadge = (status: VehicleStatus) => {
-    const statusConfig = {
-      'Active': { color: 'bg-green-100 text-green-800', label: 'Active' },
-      'In Maintenance': { color: 'bg-yellow-100 text-yellow-800', label: 'In Maintenance' },
-      'Idle': { color: 'bg-gray-100 text-gray-800', label: 'Idle' }
+  const getStatusBadge = (status: string) => {
+    const statusColors = {
+      'Active': 'bg-green-100 text-green-800',
+      'In Maintenance': 'bg-yellow-100 text-yellow-800',
+      'Idle': 'bg-gray-100 text-gray-800'
     };
-    const config = statusConfig[status];
-    return <Badge className={config.color}>{config.label}</Badge>;
-  };
-
-  const getConditionBadge = (condition: VehicleCondition) => {
-    const conditionConfig = {
-      'New': { color: 'bg-green-100 text-green-800', label: 'New' },
-      'Good': { color: 'bg-blue-100 text-blue-800', label: 'Good' },
-      'Retired': { color: 'bg-red-100 text-red-800', label: 'Retired' }
-    };
-    const config = conditionConfig[condition];
-    return <Badge className={config.color}>{config.label}</Badge>;
+    const color = statusColors[status as keyof typeof statusColors] || 'bg-gray-100 text-gray-800';
+    return <Badge className={color}>{status}</Badge>;
   };
 
   const resetForm = () => {
     setFormData({});
-    setEditingVehicle(null);
   };
 
   const openAddDialog = () => {
@@ -162,10 +71,31 @@ export const VehicleManagement: React.FC = () => {
     setIsAddDialogOpen(true);
   };
 
-  const openEditDialog = (vehicle: Vehicle) => {
-    setFormData(vehicle);
-    setEditingVehicle(vehicle);
-    setIsAddDialogOpen(true);
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      
+      // Ensure required fields are present for creation
+      const vehicleData = {
+        ...formData,
+        vehicleId: formData.vehicleId || `VEH${Date.now()}`,
+        vinNumber: formData.vinNumber || '',
+        registrationNumber: formData.registrationNumber || '',
+        brand: formData.brand || '',
+        model: formData.model || '',
+        status: formData.status || 'Active'
+      } as Omit<Vehicle, 'id' | 'createdAt' | 'updatedAt'>;
+      
+      await databaseService.createVehicle(vehicleData, 'system');
+      console.log('Vehicle created successfully');
+      setIsAddDialogOpen(false);
+      resetForm();
+      fetchVehicles();
+    } catch (error) {
+      console.error('Error creating vehicle:', error);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -184,57 +114,24 @@ export const VehicleManagement: React.FC = () => {
             <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
-          {canEdit && (
-            <Button onClick={openAddDialog}>
-              <Plus className="w-4 h-4 mr-2" />
-              Add Vehicle
-            </Button>
-          )}
+          <Button onClick={openAddDialog}>
+            <Plus className="w-4 h-4 mr-2" />
+            Add Vehicle
+          </Button>
         </div>
       </div>
 
-      {/* Filters */}
+      {/* Search */}
       <Card>
         <CardContent className="p-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input
-                placeholder="Search vehicles..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            
-            <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as VehicleStatus | 'all')}>
-              <SelectTrigger>
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="Active">Active</SelectItem>
-                <SelectItem value="In Maintenance">In Maintenance</SelectItem>
-                <SelectItem value="Idle">Idle</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={typeFilter} onValueChange={(value) => setTypeFilter(value as VehicleType | 'all')}>
-              <SelectTrigger>
-                <SelectValue placeholder="Filter by type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="E4W">E4W</SelectItem>
-                <SelectItem value="E2W">E2W</SelectItem>
-                <SelectItem value="Shuttle">Shuttle</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Button variant="outline">
-              <Download className="w-4 h-4 mr-2" />
-              Export
-            </Button>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Input
+              placeholder="Search vehicles..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
           </div>
         </CardContent>
       </Card>
@@ -249,11 +146,14 @@ export const VehicleManagement: React.FC = () => {
           {loading ? (
             <div className="flex items-center justify-center h-32">
               <RefreshCw className="w-6 h-6 animate-spin text-blue-600" />
+              <span className="ml-2">Loading vehicles...</span>
             </div>
           ) : filteredVehicles.length === 0 ? (
             <div className="text-center py-8">
               <Car className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">No vehicles found</p>
+              <p className="text-gray-600">
+                {vehicles.length === 0 ? 'No vehicles found in database' : 'No vehicles match your search'}
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -265,63 +165,29 @@ export const VehicleManagement: React.FC = () => {
                         <h3 className="font-semibold text-lg">{vehicle.registrationNumber}</h3>
                         <p className="text-gray-600">{vehicle.brand} {vehicle.model}</p>
                       </div>
-                      {getStatusBadge(vehicle.status)}
+                      {vehicle.status && getStatusBadge(vehicle.status)}
                     </div>
                     
                     <div className="space-y-2 text-sm text-gray-600">
                       <div className="flex items-center gap-2">
                         <Car className="w-4 h-4" />
-                        <span>Class: {vehicle.vehicleClass}</span>
+                        <span>Class: {vehicle.vehicleClass || 'N/A'}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Fuel className="w-4 h-4" />
-                        <span>Type: {vehicle.vehicleType}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Battery className="w-4 h-4" />
-                        <span>Fuel: {vehicle.fuelType}</span>
+                        <span>Type: {vehicle.vehicleType || 'N/A'}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <MapPin className="w-4 h-4" />
-                        <span>{vehicle.locationAssigned}</span>
+                        <span>{vehicle.locationAssigned || 'N/A'}</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4" />
-                        <span>Registration: {vehicle.registrationDate ? new Date(vehicle.registrationDate).toLocaleDateString() : 'N/A'}</span>
-                      </div>
-                      {vehicle.vehicleCondition && (
+                      {vehicle.registrationDate && (
                         <div className="flex items-center gap-2">
-                          <Settings className="w-4 h-4" />
-                          {getConditionBadge(vehicle.vehicleCondition)}
+                          <Calendar className="w-4 h-4" />
+                          <span>Registered: {new Date(vehicle.registrationDate).toLocaleDateString()}</span>
                         </div>
                       )}
                     </div>
-
-                    {(canEdit || canDelete) && (
-                      <div className="flex gap-2 mt-4 pt-3 border-t">
-                        {canEdit && (
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => openEditDialog(vehicle)}
-                          >
-                            <Edit className="w-4 h-4 mr-1" />
-                            Edit
-                          </Button>
-                        )}
-                        {canDelete && (
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => handleDelete(vehicle.id)}
-                            className="text-red-600 hover:text-red-700"
-                          >
-                            <Trash2 className="w-4 h-4 mr-1" />
-                            Delete
-                          </Button>
-                        )}
-                      </div>
-                    )}
                   </CardContent>
                 </Card>
               ))}
@@ -330,15 +196,13 @@ export const VehicleManagement: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Add/Edit Dialog */}
+      {/* Add Vehicle Dialog */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>
-              {editingVehicle ? 'Edit Vehicle' : 'Add New Vehicle'}
-            </DialogTitle>
+            <DialogTitle>Add New Vehicle</DialogTitle>
             <DialogDescription>
-              {editingVehicle ? 'Update vehicle information' : 'Enter vehicle details to add to the database'}
+              Enter vehicle details to add to the database
             </DialogDescription>
           </DialogHeader>
           
@@ -426,7 +290,7 @@ export const VehicleManagement: React.FC = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="vehicleClass">Vehicle Class *</Label>
-                  <Select value={formData.vehicleClass || ''} onValueChange={(value) => setFormData({...formData, vehicleClass: value as VehicleClass})}>
+                  <Select value={formData.vehicleClass || ''} onValueChange={(value) => setFormData({...formData, vehicleClass: value as any})}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select class" />
                     </SelectTrigger>
@@ -443,7 +307,7 @@ export const VehicleManagement: React.FC = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="vehicleType">Vehicle Type *</Label>
-                  <Select value={formData.vehicleType || ''} onValueChange={(value) => setFormData({...formData, vehicleType: value as VehicleType})}>
+                  <Select value={formData.vehicleType || ''} onValueChange={(value) => setFormData({...formData, vehicleType: value as any})}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
@@ -457,7 +321,7 @@ export const VehicleManagement: React.FC = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="fuelType">Fuel Type *</Label>
-                  <Select value={formData.fuelType || ''} onValueChange={(value) => setFormData({...formData, fuelType: value as FuelType})}>
+                  <Select value={formData.fuelType || ''} onValueChange={(value) => setFormData({...formData, fuelType: value as any})}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select fuel type" />
                     </SelectTrigger>
@@ -471,7 +335,7 @@ export const VehicleManagement: React.FC = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="vehicleCondition">Vehicle Condition</Label>
-                  <Select value={formData.vehicleCondition || ''} onValueChange={(value) => setFormData({...formData, vehicleCondition: value as VehicleCondition})}>
+                  <Select value={formData.vehicleCondition || ''} onValueChange={(value) => setFormData({...formData, vehicleCondition: value as any})}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select condition" />
                     </SelectTrigger>
@@ -485,7 +349,7 @@ export const VehicleManagement: React.FC = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="status">Status *</Label>
-                  <Select value={formData.status || ''} onValueChange={(value) => setFormData({...formData, status: value as VehicleStatus})}>
+                  <Select value={formData.status || ''} onValueChange={(value) => setFormData({...formData, status: value as any})}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
@@ -558,7 +422,7 @@ export const VehicleManagement: React.FC = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="chargerType">Charger Type</Label>
-                  <Select value={formData.chargerType || ''} onValueChange={(value) => setFormData({...formData, chargerType: value as ChargerType})}>
+                  <Select value={formData.chargerType || ''} onValueChange={(value) => setFormData({...formData, chargerType: value as any})}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select charger type" />
                     </SelectTrigger>
@@ -647,7 +511,7 @@ export const VehicleManagement: React.FC = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="policeCertificateStatus">Police Certificate Status</Label>
-                  <Select value={formData.policeCertificateStatus || ''} onValueChange={(value) => setFormData({...formData, policeCertificateStatus: value as PoliceStatus})}>
+                  <Select value={formData.policeCertificateStatus || ''} onValueChange={(value) => setFormData({...formData, policeCertificateStatus: value as any})}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
@@ -670,7 +534,7 @@ export const VehicleManagement: React.FC = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="pucStatus">PUC Status</Label>
-                  <Select value={formData.pucStatus || ''} onValueChange={(value) => setFormData({...formData, pucStatus: value as PUCStatus})}>
+                  <Select value={formData.pucStatus || ''} onValueChange={(value) => setFormData({...formData, pucStatus: value as any})}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select PUC status" />
                     </SelectTrigger>
@@ -740,7 +604,7 @@ export const VehicleManagement: React.FC = () => {
               Cancel
             </Button>
             <Button onClick={handleSave} disabled={saving}>
-              {editingVehicle ? 'Update' : 'Add'} Vehicle
+              {saving ? 'Adding...' : 'Add Vehicle'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -748,3 +612,5 @@ export const VehicleManagement: React.FC = () => {
     </div>
   );
 };
+
+export default VehicleManagementSimple;

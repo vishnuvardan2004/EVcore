@@ -50,6 +50,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           const response = await apiService.auth.verifyToken();
           if (response.success) {
             setUser(response.data.user);
+            setIsLoading(false);
+            return;
           } else {
             localStorage.removeItem(config.TOKEN_STORAGE_KEY);
           }
@@ -58,6 +60,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           localStorage.removeItem(config.TOKEN_STORAGE_KEY);
         }
       }
+      
+      // Auto-login with demo user for development
+      const demoUser = mockUsers[0]; // Use admin user
+      const mockToken = btoa(JSON.stringify({ 
+        email: demoUser.email, 
+        role: demoUser.role, 
+        exp: Date.now() + 86400000 
+      }));
+      localStorage.setItem(config.TOKEN_STORAGE_KEY, mockToken);
+      setUser({
+        email: demoUser.email,
+        role: demoUser.role
+      });
+      
       setIsLoading(false);
     };
 
