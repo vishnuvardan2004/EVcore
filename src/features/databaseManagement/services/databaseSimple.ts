@@ -97,6 +97,82 @@ export class MasterDatabase extends Dexie {
         }
       ]);
 
+      // Sample Charging Equipment - updated to match ChargingEquipment interface
+      await this.chargingEquipment.bulkAdd([
+        {
+          id: '1',
+          chargerId: 'CHG001',
+          serialNumber: 'SN123456789',
+          chargerName: 'Fast Charger Hub 1',
+          chargerType: 'DC Fast',
+          portType: 'CCS2',
+          noOfPorts: 2,
+          powerRatingKW: 50.0,
+          compatibleVehicleTypes: 'E4W, E2W, Shuttle',
+          locationType: 'Hub',
+          locationId: 'BLR-HUB-001',
+          assignedToId: '',
+          chargerStatus: 'Active',
+          ownershipType: 'EVZIP',
+          manufacturerName: 'ABB',
+          dateOfInstallation: '2023-01-15',
+          warrantyValidTill: '2026-01-15',
+          lastServiceDate: '2024-01-15',
+          nextMaintenanceDue: '2024-07-15',
+          createdAt: '2024-01-15T09:00:00Z',
+          updatedAt: '2024-01-15T09:00:00Z',
+          createdBy: 'system'
+        },
+        {
+          id: '2',
+          chargerId: 'CHG002',
+          serialNumber: 'SN987654321',
+          chargerName: 'AC Slow Charger Office',
+          chargerType: 'AC Slow',
+          portType: 'Type 2',
+          noOfPorts: 4,
+          powerRatingKW: 7.4,
+          compatibleVehicleTypes: 'E4W, E2W',
+          locationType: 'Office',
+          locationId: 'BLR-OFF-001',
+          assignedToId: '',
+          chargerStatus: 'Active',
+          ownershipType: 'EVZIP',
+          manufacturerName: 'Schneider Electric',
+          dateOfInstallation: '2023-03-20',
+          warrantyValidTill: '2026-03-20',
+          lastServiceDate: '2024-03-20',
+          nextMaintenanceDue: '2024-09-20',
+          createdAt: '2024-03-20T09:00:00Z',
+          updatedAt: '2024-03-20T09:00:00Z',
+          createdBy: 'system'
+        },
+        {
+          id: '3',
+          chargerId: 'CHG003',
+          serialNumber: 'SN456789123',
+          chargerName: 'Public Fast Charger',
+          chargerType: 'DC Fast',
+          portType: 'CCS2, CHAdeMO',
+          noOfPorts: 1,
+          powerRatingKW: 150.0,
+          compatibleVehicleTypes: 'E4W, Shuttle',
+          locationType: 'Public',
+          locationId: 'BLR-PUB-001',
+          assignedToId: '',
+          chargerStatus: 'Active',
+          ownershipType: 'Leased',
+          manufacturerName: 'Tesla',
+          dateOfInstallation: '2023-06-10',
+          warrantyValidTill: '2026-06-10',
+          lastServiceDate: '2024-06-10',
+          nextMaintenanceDue: '2024-12-10',
+          createdAt: '2024-06-10T09:00:00Z',
+          updatedAt: '2024-06-10T09:00:00Z',
+          createdBy: 'system'
+        }
+      ]);
+
       // Sample Employees - minimal data
       await this.employees.bulkAdd([
         {
@@ -138,6 +214,164 @@ export class MasterDatabase extends Dexie {
         }
       ]);
 
+      // Sample Electrical Equipment - updated to match ElectricalEquipment interface
+      await this.electricalEquipment.bulkAdd([
+        {
+          id: '1',
+          equipmentId: 'EQ-HUB-001',
+          equipmentName: 'Main Distribution Transformer',
+          category: 'Transformer',
+          makeModel: 'ABB Model TX-500',
+          serialNumber: 'TX500-001-2023',
+          powerCapacityKVA: 500.0,
+          phaseType: 'Three',
+          voltageRating: '11kV/415V',
+          currentRating: '750A',
+          frequency: 50.0,
+          locationId: 'BLR-HUB-001',
+          locationType: 'Hub',
+          installationDate: '2023-01-15',
+          ownershipStatus: 'Owned',
+          installedBy: 'ABB Technical Services',
+          usagePurpose: 'Primary power distribution for hub operations',
+          status: 'Active',
+          warrantyValidTill: '2026-01-15',
+          amcContractStatus: 'Active',
+          lastServiceDate: '2024-01-15',
+          nextMaintenanceDue: '2024-07-15',
+          createdAt: '2024-01-15T09:00:00Z',
+          updatedAt: '2024-01-15T09:00:00Z',
+          createdBy: 'system'
+        },
+        {
+          id: '2',
+          equipmentId: 'EQ-OFF-001',
+          equipmentName: 'Office UPS System',
+          category: 'UPS',
+          makeModel: 'APC Smart UPS 10kVA',
+          serialNumber: 'UPS10K-002-2023',
+          powerCapacityKVA: 10.0,
+          phaseType: 'Single',
+          voltageRating: '230V',
+          currentRating: '45A',
+          frequency: 50.0,
+          locationId: 'BLR-OFF-001',
+          locationType: 'Office',
+          installationDate: '2023-03-20',
+          ownershipStatus: 'Owned',
+          installedBy: 'APC Authorized Partner',
+          usagePurpose: 'Backup power for office critical systems',
+          status: 'Active',
+          warrantyValidTill: '2026-03-20',
+          amcContractStatus: 'Active',
+          lastServiceDate: '2024-03-20',
+          nextMaintenanceDue: '2024-09-20',
+          createdAt: '2024-03-20T09:00:00Z',
+          updatedAt: '2024-03-20T09:00:00Z',
+          createdBy: 'system'
+        },
+        {
+          id: '3',
+          equipmentId: 'EQ-HUB-002',
+          equipmentName: 'Emergency Generator',
+          category: 'Generator',
+          makeModel: 'Cummins 250kVA',
+          serialNumber: 'GEN250-003-2023',
+          powerCapacityKVA: 250.0,
+          phaseType: 'Three',
+          voltageRating: '415V',
+          currentRating: '400A',
+          frequency: 50.0,
+          locationId: 'BLR-HUB-001',
+          locationType: 'Hub',
+          installationDate: '2023-06-10',
+          ownershipStatus: 'Leased',
+          installedBy: 'Cummins India Ltd',
+          usagePurpose: 'Emergency backup power during grid outages',
+          status: 'Active',
+          warrantyValidTill: '2026-06-10',
+          amcContractStatus: 'Active',
+          lastServiceDate: '2024-06-10',
+          nextMaintenanceDue: '2024-12-10',
+          createdAt: '2024-06-10T09:00:00Z',
+          updatedAt: '2024-06-10T09:00:00Z',
+          createdBy: 'system'
+        }
+      ]);
+
+      // Sample IT Equipment - updated to match ITEquipment interface
+      await this.itEquipment.bulkAdd([
+        {
+          id: '1',
+          assetId: 'IT-TAB-001',
+          assetType: 'Tablet',
+          makeModel: 'Apple iPad Pro 12.9"',
+          serialNumber: 'IPAD001234567',
+          imeiNumber: '123456789012345',
+          assetStatus: 'In Use',
+          purchaseDate: '2023-01-15',
+          purchaseInvoiceNo: 'INV-2023-001',
+          vendorName: 'Apple Authorized Reseller',
+          warrantyValidTill: '2025-01-15',
+          assignedToId: 'EMP001',
+          assignedDate: '2023-01-20',
+          returnDate: '',
+          accessoriesProvided: 'Charger, Apple Pencil, Protective Case',
+          conditionNotes: 'Excellent condition, no visible scratches',
+          assetLocation: 'Bangalore Hub',
+          complianceTag: true,
+          createdAt: '2024-01-15T09:00:00Z',
+          updatedAt: '2024-01-15T09:00:00Z',
+          createdBy: 'system'
+        },
+        {
+          id: '2',
+          assetId: 'IT-LAP-001',
+          assetType: 'Laptop',
+          makeModel: 'Dell Latitude 5520',
+          serialNumber: 'DELL987654321',
+          imeiNumber: '',
+          assetStatus: 'In Use',
+          purchaseDate: '2023-03-20',
+          purchaseInvoiceNo: 'INV-2023-045',
+          vendorName: 'Dell Technologies',
+          warrantyValidTill: '2026-03-20',
+          assignedToId: 'PIL001',
+          assignedDate: '2023-03-25',
+          returnDate: '',
+          accessoriesProvided: 'Charger, Wireless Mouse, Laptop Bag',
+          conditionNotes: 'Good working condition, minor wear on keyboard',
+          assetLocation: 'Bangalore Office',
+          complianceTag: true,
+          createdAt: '2024-03-20T09:00:00Z',
+          updatedAt: '2024-03-20T09:00:00Z',
+          createdBy: 'system'
+        },
+        {
+          id: '3',
+          assetId: 'IT-PHN-001',
+          assetType: 'Phone',
+          makeModel: 'Samsung Galaxy S23',
+          serialNumber: 'SAM456789123',
+          imeiNumber: '987654321098765',
+          assetStatus: 'Available',
+          purchaseDate: '2023-06-10',
+          purchaseInvoiceNo: 'INV-2023-089',
+          vendorName: 'Samsung Electronics',
+          warrantyValidTill: '2025-06-10',
+          assignedToId: '',
+          assignedDate: '',
+          returnDate: '2024-05-15',
+          accessoriesProvided: 'Charger, Screen Protector, Phone Case',
+          conditionNotes: 'Like new condition, recently returned',
+          assetLocation: 'IT Store Room',
+          complianceTag: true,
+          createdAt: '2024-06-10T09:00:00Z',
+          updatedAt: '2024-06-10T09:00:00Z',
+          createdBy: 'system'
+        }
+      ]);
+
       // Sample Pilots - minimal data
       await this.pilots.bulkAdd([
         {
@@ -157,6 +391,76 @@ export class MasterDatabase extends Dexie {
           nextTraining: '2024-07-01',
           createdAt: '2024-01-15T09:00:00Z',
           updatedAt: '2024-01-15T09:00:00Z',
+          createdBy: 'system'
+        }
+      ]);
+
+      // Sample Infrastructure & Furniture - updated to match InfraFurniture interface
+      await this.infraFurniture.bulkAdd([
+        {
+          id: '1',
+          assetId: 'INF-CHAIR-001',
+          assetType: 'Chair',
+          makeModel: 'Herman Miller Aeron',
+          materialType: 'Mesh and Aluminum',
+          color: 'Black',
+          quantity: 25,
+          purchaseDate: '2023-01-15',
+          vendorName: 'Herman Miller India',
+          assetStatus: 'In Use',
+          ownershipType: 'Owned',
+          locationId: 'BLR-OFF-001',
+          roomAreaDescription: 'Open Office Area',
+          condition: 'Good',
+          lastInspectionDate: '2024-01-15',
+          nextMaintenanceDue: '2024-07-15',
+          amcContractStatus: 'Active',
+          createdAt: '2024-01-15T09:00:00Z',
+          updatedAt: '2024-01-15T09:00:00Z',
+          createdBy: 'system'
+        },
+        {
+          id: '2',
+          assetId: 'INF-DESK-001',
+          assetType: 'Desk',
+          makeModel: 'IKEA BEKANT',
+          materialType: 'Laminated Wood',
+          color: 'White',
+          quantity: 15,
+          purchaseDate: '2023-03-20',
+          vendorName: 'IKEA Business Solutions',
+          assetStatus: 'In Use',
+          ownershipType: 'Owned',
+          locationId: 'BLR-OFF-001',
+          roomAreaDescription: 'Open Office Area',
+          condition: 'Good',
+          lastInspectionDate: '2024-03-20',
+          nextMaintenanceDue: '2024-09-20',
+          amcContractStatus: 'NA',
+          createdAt: '2024-03-20T09:00:00Z',
+          updatedAt: '2024-03-20T09:00:00Z',
+          createdBy: 'system'
+        },
+        {
+          id: '3',
+          assetId: 'INF-CAB-001',
+          assetType: 'Cabinet',
+          makeModel: 'Godrej Steel Cabinet',
+          materialType: 'Steel',
+          color: 'Grey',
+          quantity: 8,
+          purchaseDate: '2023-06-10',
+          vendorName: 'Godrej Interio',
+          assetStatus: 'In Use',
+          ownershipType: 'Owned',
+          locationId: 'BLR-HUB-001',
+          roomAreaDescription: 'Control Room',
+          condition: 'Excellent',
+          lastInspectionDate: '2024-06-10',
+          nextMaintenanceDue: '2024-12-10',
+          amcContractStatus: 'NA',
+          createdAt: '2024-06-10T09:00:00Z',
+          updatedAt: '2024-06-10T09:00:00Z',
           createdBy: 'system'
         }
       ]);
@@ -190,6 +494,62 @@ export class DatabaseService {
     
     await masterDb.vehicles.add(vehicle);
     return vehicle;
+  }
+
+  async createChargingEquipment(equipmentData: Omit<ChargingEquipment, 'id' | 'createdAt' | 'updatedAt'>, createdBy: string): Promise<ChargingEquipment> {
+    const now = new Date().toISOString();
+    const equipment: ChargingEquipment = {
+      ...equipmentData,
+      id: `charger_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      createdAt: now,
+      updatedAt: now,
+      createdBy
+    };
+    
+    await masterDb.chargingEquipment.add(equipment);
+    return equipment;
+  }
+
+  async createElectricalEquipment(equipmentData: Omit<ElectricalEquipment, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>, createdBy: string): Promise<ElectricalEquipment> {
+    const now = new Date().toISOString();
+    const equipment: ElectricalEquipment = {
+      ...equipmentData,
+      id: `electrical_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      createdAt: now,
+      updatedAt: now,
+      createdBy
+    };
+    
+    await masterDb.electricalEquipment.add(equipment);
+    return equipment;
+  }
+
+  async createITEquipment(equipmentData: Omit<ITEquipment, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>, createdBy: string): Promise<ITEquipment> {
+    const now = new Date().toISOString();
+    const equipment: ITEquipment = {
+      ...equipmentData,
+      id: `it_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      createdAt: now,
+      updatedAt: now,
+      createdBy
+    };
+    
+    await masterDb.itEquipment.add(equipment);
+    return equipment;
+  }
+
+  async createInfraFurniture(furnitureData: Omit<InfraFurniture, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>, createdBy: string): Promise<InfraFurniture> {
+    const now = new Date().toISOString();
+    const furniture: InfraFurniture = {
+      ...furnitureData,
+      id: `furniture_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      createdAt: now,
+      updatedAt: now,
+      createdBy
+    };
+    
+    await masterDb.infraFurniture.add(furniture);
+    return furniture;
   }
 
   async getDatabaseStats(): Promise<DatabaseStats> {

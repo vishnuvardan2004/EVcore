@@ -55,15 +55,36 @@ export interface Vehicle {
 
 export interface ChargingEquipment {
   id: string;
-  equipmentNumber: string;
-  model: string;
-  brand: string;
-  powerOutput: string; // kW
-  connectorType: 'Type 1' | 'Type 2' | 'CCS' | 'CHAdeMO' | 'Tesla';
-  location: string;
-  status: 'Active' | 'Maintenance' | 'Out of Service';
-  installationDate: string;
-  warrantyExpiry: string;
+  chargerId: string; // Unique charger ID
+  serialNumber: string; // Manufacturer serial no.
+  chargerName: string; // Label/model name
+  chargerType: 'AC Slow' | 'DC Fast'; // [AC Slow, DC Fast]
+  portType: string; // CCS2, Type 2, etc.
+  noOfPorts: number; // Simultaneous ports
+  powerRatingKW: number; // Charger capacity
+  compatibleVehicleTypes: string; // E2W, E4W, Shuttle (Array format)
+  locationType: 'Hub' | 'Office' | 'Public'; // [Hub, Office, Public]
+  locationId: string; // Assigned location ID
+  assignedToId?: string; // Vehicle or pilot (optional)
+  chargerStatus: 'Active' | 'Repair' | 'Retired'; // [Active, Repair, Retired]
+  ownershipType: 'EVZIP' | 'Leased'; // [EVZIP, Leased]
+  manufacturerName: string; // OEM info
+  dateOfInstallation: string; // Date
+  warrantyValidTill: string; // Expiry date
+  lastServiceDate: string; // Last maintenance
+  nextMaintenanceDue: string; // Scheduled date
+  
+  // Legacy fields for compatibility
+  equipmentNumber?: string;
+  model?: string;
+  brand?: string;
+  powerOutput?: string; // kW
+  connectorType?: 'Type 1' | 'Type 2' | 'CCS' | 'CHAdeMO' | 'Tesla';
+  location?: string;
+  status?: 'Active' | 'Maintenance' | 'Out of Service';
+  installationDate?: string;
+  warrantyExpiry?: string;
+  
   createdAt: string;
   updatedAt: string;
   createdBy: string;
@@ -71,16 +92,39 @@ export interface ChargingEquipment {
 
 export interface ElectricalEquipment {
   id: string;
-  equipmentNumber: string;
-  type: 'Panel' | 'Cable' | 'Switch' | 'Transformer' | 'Generator' | 'UPS';
-  brand: string;
-  model: string;
-  voltage: string;
-  amperage: string;
-  location: string;
-  status: 'Active' | 'Maintenance' | 'Out of Service';
-  installationDate: string;
-  warrantyExpiry: string;
+  equipmentId: string; // Equipment_ID (PK) - e.g., EQ-HUB-001
+  equipmentName: string; // Equipment_Name - e.g., Transformer
+  category: 'Transformer' | 'Panel Board' | 'UPS' | 'Generator' | 'Switch Gear' | 'Cable' | 'Other'; // Category [Transformer, Panel Board, etc.]
+  makeModel: string; // Make_Model - Manufacturer & model
+  serialNumber: string; // Serial_Number - As per label
+  powerCapacityKVA: number; // Power_Capacity_kVA/kW - Decimal
+  phaseType: 'Single' | 'Three'; // Phase_Type [Single, Three]
+  voltageRating: string; // Voltage_Rating - String
+  currentRating: string; // Current_Rating - String
+  frequency: number; // Frequency - Decimal, e.g., 50Hz
+  locationId: string; // Location_ID (FK) - Assigned site
+  locationType: 'Hub' | 'Depot' | 'Office' | 'Other'; // Location_Type [Hub, Depot, etc.]
+  installationDate: string; // Installation_Date - Date
+  ownershipStatus: 'Owned' | 'Leased' | 'Rented'; // Ownership_Status [Owned/Leased]
+  installedBy: string; // Installed_By - Vendor info
+  usagePurpose: string; // Usage_Purpose - Text description
+  status: 'Active' | 'Retired' | 'Under Maintenance'; // Status [Active/Retired]
+  warrantyValidTill: string; // Warranty_Valid_Till - Date
+  amcContractStatus: 'Active' | 'Expired' | 'NA'; // AMC_Contract_Status [Active, NA]
+  lastServiceDate: string; // Last_Service_Date - Date
+  nextMaintenanceDue: string; // Next_Maintenance_Due - Date
+  
+  // Legacy fields for compatibility
+  equipmentNumber?: string;
+  type?: 'Panel' | 'Cable' | 'Switch' | 'Transformer' | 'Generator' | 'UPS';
+  brand?: string;
+  model?: string;
+  voltage?: string;
+  amperage?: string;
+  location?: string;
+  warrantyExpiry?: string;
+  
+  // Metadata
   createdAt: string;
   updatedAt: string;
   createdBy: string;
@@ -88,17 +132,36 @@ export interface ElectricalEquipment {
 
 export interface ITEquipment {
   id: string;
-  equipmentNumber: string;
-  type: 'Computer' | 'Laptop' | 'Tablet' | 'Server' | 'Network' | 'Printer' | 'Phone';
-  brand: string;
-  model: string;
-  serialNumber: string;
-  specifications: string;
+  assetId: string; // Asset_ID (PK) - e.g., IT-TAB-001
+  assetType: 'Tablet' | 'Laptop' | 'Desktop' | 'Server' | 'Network' | 'Printer' | 'Phone' | 'Monitor' | 'Other'; // Asset_Type [Tablet, Laptop, etc.]
+  makeModel: string; // Make_Model - Manufacturer info
+  serialNumber: string; // Serial_Number - Device ID
+  imeiNumber: string; // IMEI_Number - For phones/tablets
+  assetStatus: 'In Use' | 'Repair' | 'Retired' | 'Available'; // Asset_Status [In Use, Repair, Retired]
+  purchaseDate: string; // Purchase_Date - Date
+  purchaseInvoiceNo: string; // Purchase_Invoice_No - Reference invoice
+  vendorName: string; // Vendor_Name - Supplier name
+  warrantyValidTill: string; // Warranty_Valid_Till - Expiry date
+  assignedToId: string; // Assigned_To_ID (FK) - Employee or pilot
+  assignedDate: string; // Assigned_Date - Date of handover
+  returnDate: string; // Return_Date - Optional
+  accessoriesProvided: string; // Accessories_Provided - e.g., Charger, Stylus
+  conditionNotes: string; // Condition_Notes - Asset remarks
+  assetLocation: string; // Asset_Location - Office/hub
+  complianceTag: boolean; // Compliance_Tag - Yes/No
+
+  // Legacy fields for compatibility
+  equipmentNumber?: string;
+  type?: 'Computer' | 'Laptop' | 'Tablet' | 'Server' | 'Network' | 'Printer' | 'Phone';
+  brand?: string;
+  model?: string;
+  specifications?: string;
   assignedTo?: string;
-  location: string;
-  status: 'Active' | 'Maintenance' | 'Out of Service' | 'Assigned' | 'Available';
-  purchaseDate: string;
-  warrantyExpiry: string;
+  location?: string;
+  status?: 'Active' | 'Maintenance' | 'Out of Service' | 'Assigned' | 'Available';
+  warrantyExpiry?: string;
+  
+  // Metadata
   createdAt: string;
   updatedAt: string;
   createdBy: string;
@@ -106,17 +169,35 @@ export interface ITEquipment {
 
 export interface InfraFurniture {
   id: string;
-  itemNumber: string;
-  type: string;
-  category: 'Infrastructure' | 'Furniture';
-  brand: string;
-  model: string;
-  description: string;
-  location: string;
-  room: string;
-  condition: 'Excellent' | 'Good' | 'Fair' | 'Poor' | 'Needs Replacement';
-  purchaseDate: string;
-  warrantyExpiry: string;
+  assetId: string; // Asset_ID (PK) - e.g., INF-CHAIR-001
+  assetType: 'Chair' | 'Desk' | 'Partition' | 'Cabinet' | 'Table' | 'Sofa' | 'Shelf' | 'Rack' | 'Other'; // Asset_Type [Chair, Desk, Partition, etc.]
+  makeModel: string; // Make/Model - If applicable
+  materialType: string; // Material_Type - Wood, Steel, etc.
+  color: string; // Color - Optional
+  quantity: number; // Quantity - No. of units (Integer)
+  purchaseDate: string; // Purchase_Date - Date
+  vendorName: string; // Vendor_Name - Supplier name
+  assetStatus: 'In Use' | 'Damaged' | 'Retired' | 'Available'; // Asset_Status [In Use, Damaged, Retired]
+  ownershipType: 'Owned' | 'Rented' | 'Leased'; // Ownership_Type [Owned, Rented]
+  locationId: string; // Location_ID (FK) - Office/Hub/Kiosk
+  roomAreaDescription: string; // Room/Area_Description - e.g., Control Room
+  condition: 'Good' | 'Worn' | 'Damaged' | 'Excellent'; // Condition [Good, Worn, Damaged]
+  lastInspectionDate: string; // Last_Inspection_Date - Date
+  nextMaintenanceDue: string; // Next_Maintenance_Due - If applicable
+  amcContractStatus: 'Active' | 'NA' | 'Expired'; // AMC_Contract_Status [Active, NA]
+
+  // Legacy fields for compatibility
+  itemNumber?: string;
+  type?: string;
+  category?: 'Infrastructure' | 'Furniture';
+  brand?: string;
+  model?: string;
+  description?: string;
+  location?: string;
+  room?: string;
+  warrantyExpiry?: string;
+  
+  // Metadata
   createdAt: string;
   updatedAt: string;
   createdBy: string;

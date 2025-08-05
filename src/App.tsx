@@ -20,6 +20,10 @@ import {
   DataAnalytics 
 } from './features/databaseManagement';
 import VehicleManagementSimple from './features/databaseManagement/components/VehicleManagementSimple';
+import ChargingEquipmentManagementSimple from './features/databaseManagement/components/ChargingEquipmentManagementSimple';
+import ElectricalEquipmentManagementSimple from './features/databaseManagement/components/ElectricalEquipmentManagementSimple';
+import ITEquipmentManagementSimple from './features/databaseManagement/components/ITEquipmentManagementSimple';
+import InfraFurnitureManagementSimple from './features/databaseManagement/components/InfraFurnitureManagementSimple';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './pages/Login';
 import { Toaster } from '@/components/ui/toaster';
@@ -69,6 +73,10 @@ const AppContent = () => {
             <Route path="/database/*" element={<DatabaseLayout />}>
               <Route index element={<DatabaseDashboard />} />
               <Route path="vehicles" element={<VehicleManagementSimple />} />
+              <Route path="charging-equipment" element={<ChargingEquipmentManagementSimple />} />
+              <Route path="electrical-equipment" element={<ElectricalEquipmentManagementSimple />} />
+              <Route path="it-equipment" element={<ITEquipmentManagementSimple />} />
+              <Route path="infra-furniture" element={<InfraFurnitureManagementSimple />} />
               <Route path="employees" element={<EmployeeManagement />} />
               <Route path="pilots" element={<PilotManagement />} />
               <Route path="customers" element={<CustomerManagement />} />
