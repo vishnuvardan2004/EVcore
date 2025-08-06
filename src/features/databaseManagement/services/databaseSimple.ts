@@ -40,16 +40,24 @@ export class MasterDatabase extends Dexie {
       pilots: 'id, pilotId, employeeId, licenseNumber, status'
     });
 
-    // Populate with sample data on first load
+    // Populate with sample data on first load (only in development or when explicitly enabled)
     this.on('ready', () => this.initializeSampleData());
   }
 
   private async initializeSampleData() {
-    // Only initialize if database is empty
+    // Only initialize if database is empty AND we're in development mode
     const vehicleCount = await this.vehicles.count();
-    if (vehicleCount === 0) {
+    const shouldPopulateSampleData = import.meta.env.DEV || localStorage.getItem('enableSampleData') === 'true';
+    
+    if (vehicleCount === 0 && shouldPopulateSampleData) {
+      console.log('Populating database with sample data for development...');
       await this.populateSampleData();
     }
+  }
+
+  // Method to manually populate sample data for demos
+  public async populateSampleDataManually() {
+    await this.populateSampleData();
   }
 
   private async populateSampleData() {
@@ -612,6 +620,33 @@ export class DatabaseService {
 
   async getPilots(): Promise<Pilot[]> {
     return this.getAll(masterDb.pilots);
+  }
+
+  // Employee CRUD operations
+  async createEmployee(employeeData: Omit<Employee, 'id' | 'createdAt' | 'updatedAt'>, createdBy: string): Promise<Employee> {
+    const now = new Date().toISOString();
+    const employee: Employee = {
+      ...employeeData,
+      id: `employee_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      createdAt: now,
+      updatedAt: now,
+      createdBy
+    };
+    
+    await masterDb.employees.add(employee);
+    return employee;
+  }
+
+  async updateEmployee(id: string, updates: Partial<Employee>, userId: string): Promise<void> {
+    const now = new Date().toISOString();
+    await masterDb.employees.update(id, {
+      ...updates,
+      updatedAt: now
+    });
+  }
+
+  async deleteEmployee(id: string, userId: string): Promise<void> {
+    await masterDb.employees.delete(id);
   }
 }
 

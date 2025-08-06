@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { ChargingTrackerLayout } from '../components/ChargingTrackerLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../shared/components/ui/card';
-import { Button } from '../../../shared/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../shared/components/ui/select';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Car, User, TrendingUp, MapPin } from 'lucide-react';
 

@@ -1,119 +1,80 @@
-
 import React, { useState } from 'react';
-import { Camera } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useCamera } from '../../../hooks/useCamera';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Keyboard, AlertCircle, CheckCircle2, Car } from 'lucide-react';
 
 interface VehicleScannerProps {
-  onVehicleDetected: (vehicleNumber: string) => void;
+  onVehicleDetected: (vehicleId: string) => void;
+  isProcessing?: boolean;
 }
 
-export const VehicleScanner: React.FC<VehicleScannerProps> = ({ onVehicleDetected }) => {
+export const VehicleScanner: React.FC<VehicleScannerProps> = ({
+  onVehicleDetected,
+  isProcessing = false
+}) => {
   const [manualEntry, setManualEntry] = useState('');
-  const { isActive, capturedImage, videoRef, canvasRef, startCamera, captureImage, stopCamera, resetCapture } = useCamera();
+  const [error, setError] = useState<string>('');
 
-  const handleSubmit = () => {
+  const handleManualSubmit = () => {
     if (manualEntry.trim()) {
       onVehicleDetected(manualEntry.trim().toUpperCase());
       setManualEntry('');
     }
   };
 
-  const handleScanCapture = () => {
-    captureImage();
-    // Simulate QR/Barcode detection
-    setTimeout(() => {
-      const mockVehicleNumber = `VH-${Math.floor(Math.random() * 9999).toString().padStart(4, '0')}`;
-      onVehicleDetected(mockVehicleNumber);
-      resetCapture();
-    }, 1000);
-  };
-
-  if (isActive) {
-    return (
-      <div className="space-y-4">
-        <div className="relative">
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            className="w-full h-64 object-cover rounded-lg border"
-          />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-48 h-32 border-2 border-white rounded-lg"></div>
-          </div>
-        </div>
-        <canvas ref={canvasRef} className="hidden" />
-        <div className="flex gap-2">
-          <Button onClick={handleScanCapture} className="flex-1">
-            <Camera className="w-4 h-4 mr-2" />
-            Capture & Scan
-          </Button>
-          <Button variant="outline" onClick={stopCamera}>
-            Cancel
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  if (capturedImage) {
-    return (
-      <div className="space-y-4">
-        <img src={capturedImage} alt="Captured" className="w-full h-64 object-cover rounded-lg" />
-        <div className="text-center">
-          <p className="text-sm text-gray-600 mb-2">Processing image...</p>
-          <div className="animate-spin w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full mx-auto"></div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-4">
-      <div className="text-center">
-        <h2 className="text-xl font-semibold mb-2">Enter Vehicle Information</h2>
-        <p className="text-gray-600 mb-6">Enter vehicle number manually or scan QR code</p>
-      </div>
-      
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-2">Vehicle Number</label>
-          <div className="relative">
-            <Input
-              type="text"
-              value={manualEntry}
-              onChange={(e) => setManualEntry(e.target.value)}
-              placeholder="e.g., VH-1234"
-              className="text-lg pr-12"
-              autoFocus
-            />
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              onClick={startCamera}
-              className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 p-0 hover:bg-gray-100"
-              title="Scan QR Code"
+    <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+              <Car className="w-4 h-4 text-blue-600" />
+            </div>
+            Enter Vehicle Number
+          </CardTitle>
+          <p className="text-gray-600 text-sm mt-2">
+            Enter the vehicle ID manually to proceed with deployment
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Manual Entry Mode */}
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                <Keyboard className="w-4 h-4" />
+                Enter Vehicle ID
+              </label>
+              <Input
+                value={manualEntry}
+                onChange={(e) => setManualEntry(e.target.value)}
+                placeholder="e.g., VH-1234"
+                className="text-center text-lg font-mono tracking-wider"
+                onKeyPress={(e) => e.key === 'Enter' && handleManualSubmit()}
+              />
+            </div>
+            
+            <Button 
+              onClick={handleManualSubmit}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3" 
+              disabled={!manualEntry.trim() || isProcessing}
             >
-              <Camera className="w-4 h-4" />
+              <CheckCircle2 className="w-4 h-4 mr-2" />
+              Continue
             </Button>
           </div>
-        </div>
-        <Button 
-          onClick={() => {
-            if (manualEntry.trim()) {
-              onVehicleDetected(manualEntry.trim().toUpperCase());
-              setManualEntry('');
-            }
-          }}
-          className="w-full" 
-          disabled={!manualEntry.trim()}
-        >
-          Continue
-        </Button>
-      </div>
-    </div>
+
+          {/* Error Display */}
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+        </CardContent>
+      </Card>
   );
 };
+
+export default VehicleScanner;

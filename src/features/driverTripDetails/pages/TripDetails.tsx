@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { PageLayout } from '../../../shared/components/PageLayout';
+import { PageLayout } from '../../../components/PageLayout';
 import { TripDetailsProvider } from '../contexts/EnhancedTripDetailsContext';
 import { EnhancedTripDetailsForm } from '../components/EnhancedTripDetailsForm';
 

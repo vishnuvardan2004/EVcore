@@ -1,12 +1,12 @@
 import React from 'react';
-import { Label } from '../../../shared/components/ui/label';
-import { Button } from '../../../shared/components/ui/button';
-import { Calendar } from '../../../shared/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '../../../shared/components/ui/popover';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { CalendarIcon, CreditCard, Upload } from 'lucide-react';
 import { format } from 'date-fns';
-import { cn } from '../../../shared/utils/cn';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../../../shared/components/ui/collapsible';
+import { cn } from '@/lib/utils';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown } from 'lucide-react';
 
 interface PVCInfoData {

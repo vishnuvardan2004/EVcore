@@ -16,7 +16,7 @@ import {
   DatabaseDashboard,
   PilotManagement, 
   CustomerManagement, 
-  EmployeeManagement, 
+  EmployeeManagement,
   DataAnalytics 
 } from './features/databaseManagement';
 import VehicleManagementSimple from './features/databaseManagement/components/VehicleManagementSimple';

@@ -1,51 +1,91 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { VehicleTrackerLayout } from '../components/VehicleTrackerLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, Eye, Clock } from 'lucide-react';
+import { vehicleService } from '../../../services/database';
+import { Deployment } from '../../../types/vehicle';
+
+interface AlertData {
+  id: string;
+  vehicleNumber: string;
+  timestamp: string;
+  type: 'checklist_mismatch' | 'overdue_return' | 'other';
+  severity: 'major' | 'minor';
+  description: string;
+  status: 'resolved' | 'acknowledged' | 'unresolved';
+}
 
 const Alerts = () => {
-  // Mock data for alerts and mismatches
-  const alerts = [
-    {
-      id: 1,
-      vehicleNumber: 'VH002',
-      timestamp: '2025-06-20T14:30:00',
-      type: 'checklist_mismatch',
-      severity: 'major',
-      description: 'Fuel level mismatch: OUT 75% vs IN 45%',
-      status: 'unresolved'
-    },
-    {
-      id: 2,
-      vehicleNumber: 'VH001',
-      timestamp: '2025-06-20T12:15:00',
-      type: 'checklist_mismatch',
-      severity: 'minor',
-      description: 'Minor scratches noted on return',
-      status: 'acknowledged'
-    },
-    {
-      id: 3,
-      vehicleNumber: 'VH003',
-      timestamp: '2025-06-20T09:45:00',
-      type: 'overdue_return',
-      severity: 'major',
-      description: 'Vehicle overdue for return by 2 hours',
-      status: 'unresolved'
-    },
-    {
-      id: 4,
-      vehicleNumber: 'VH005',
-      timestamp: '2025-06-19T16:20:00',
-      type: 'checklist_mismatch',
-      severity: 'minor',
-      description: 'Cleanliness rating discrepancy',
-      status: 'resolved'
+  const [alerts, setAlerts] = useState<AlertData[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchAlerts = async () => {
+    try {
+      setLoading(true);
+      const deployments = await vehicleService.getDeploymentHistory();
+      
+      const alertData: AlertData[] = [];
+      
+      deployments.forEach((deployment: Deployment) => {
+        // Check for checklist mismatches
+        if (deployment.inData?.checklistMismatches && deployment.inData.checklistMismatches.length > 0) {
+          deployment.inData.checklistMismatches.forEach((issue, index) => {
+            alertData.push({
+              id: `${deployment.id}-mismatch-${index}`,
+              vehicleNumber: deployment.vehicleNumber,
+              timestamp: deployment.inTimestamp || deployment.outTimestamp || new Date().toISOString(),
+              type: 'checklist_mismatch',
+              severity: 'major',
+              description: `Checklist mismatch: ${issue}`,
+              status: 'unresolved'
+            });
+          });
+        }
+        
+        // Check for overdue vehicles (still out for more than 8 hours)
+        if (deployment.outTimestamp && !deployment.inTimestamp) {
+          const outTime = new Date(deployment.outTimestamp);
+          const now = new Date();
+          const hoursOut = (now.getTime() - outTime.getTime()) / (1000 * 60 * 60);
+          
+          if (hoursOut > 8) {
+            alertData.push({
+              id: `${deployment.id}-overdue`,
+              vehicleNumber: deployment.vehicleNumber,
+              timestamp: deployment.outTimestamp,
+              type: 'overdue_return',
+              severity: 'major',
+              description: `Vehicle overdue for return by ${Math.floor(hoursOut - 8)} hours`,
+              status: 'unresolved'
+            });
+          }
+        }
+      });
+      
+      // Sort by most recent
+      const sortedAlerts = alertData.sort((a, b) => 
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
+      
+      setAlerts(sortedAlerts);
+    } catch (error) {
+      console.error('Error fetching alerts:', error);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  useEffect(() => {
+    fetchAlerts();
+    
+    // Refresh alerts every 30 seconds
+    const interval = setInterval(fetchAlerts, 30000);
+    
+    return () => clearInterval(interval);
+  }, []);
 
   const getSeverityBadge = (severity: string) => {
     if (severity === 'major') {
@@ -65,7 +105,7 @@ const Alerts = () => {
     }
   };
 
-  const handleViewDetails = (alertId: number) => {
+  const handleViewDetails = (alertId: string) => {
     console.log('Viewing alert details:', alertId);
     // Navigate to detailed view
   };
@@ -85,7 +125,9 @@ const Alerts = () => {
                   <AlertTriangle className="w-6 h-6 text-red-600" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">2</p>
+                  <p className="text-2xl font-bold">
+                    {loading ? '...' : alerts.filter(a => a.status === 'unresolved').length}
+                  </p>
                   <p className="text-sm text-gray-600">Unresolved Issues</p>
                 </div>
               </div>
@@ -99,7 +141,9 @@ const Alerts = () => {
                   <Eye className="w-6 h-6 text-yellow-600" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">1</p>
+                  <p className="text-2xl font-bold">
+                    {loading ? '...' : alerts.filter(a => a.status === 'acknowledged').length}
+                  </p>
                   <p className="text-sm text-gray-600">Acknowledged</p>
                 </div>
               </div>
@@ -113,7 +157,9 @@ const Alerts = () => {
                   <Clock className="w-6 h-6 text-green-600" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">1</p>
+                  <p className="text-2xl font-bold">
+                    {loading ? '...' : alerts.filter(a => a.status === 'resolved').length}
+                  </p>
                   <p className="text-sm text-gray-600">Resolved Today</p>
                 </div>
               </div>

@@ -1,8 +1,10 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
+import { vehicleService } from '../../../services/database';
+import { Deployment } from '../../../types/vehicle';
 
 interface ChecklistAlert {
   vehicleNumber: string;
@@ -12,21 +14,49 @@ interface ChecklistAlert {
 }
 
 export const AlertsWarnings: React.FC = () => {
-  // Mock data - replace with actual data from database
-  const alerts: ChecklistAlert[] = [
-    {
-      vehicleNumber: 'V002',
-      inDate: '2025-01-20 13:45',
-      issues: ['Fire Extinguisher missing', 'Torch not working'],
-      inSupervisor: 'Sarah Johnson'
-    },
-    {
-      vehicleNumber: 'V004',
-      inDate: '2025-01-20 11:30',
-      issues: ['Medical Kit incomplete'],
-      inSupervisor: 'Lisa Brown'
+  const [alerts, setAlerts] = useState<ChecklistAlert[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchAlerts = async () => {
+    try {
+      setLoading(true);
+      const deployments = await vehicleService.getDeploymentHistory();
+      
+      // Filter for deployments with checklist mismatches
+      const alertDeployments = deployments.filter((deployment: Deployment) => 
+        deployment.inData?.checklistMismatches && 
+        deployment.inData.checklistMismatches.length > 0
+      );
+      
+      // Convert to alert format
+      const alertData: ChecklistAlert[] = alertDeployments.map((deployment: Deployment) => ({
+        vehicleNumber: deployment.vehicleNumber,
+        inDate: deployment.inTimestamp ? new Date(deployment.inTimestamp).toLocaleString() : 'Unknown',
+        issues: deployment.inData?.checklistMismatches || [],
+        inSupervisor: deployment.inData?.inSupervisorName || 'Unknown'
+      }));
+      
+      // Sort by most recent
+      const sortedAlerts = alertData.sort((a, b) => 
+        new Date(b.inDate).getTime() - new Date(a.inDate).getTime()
+      );
+      
+      setAlerts(sortedAlerts);
+    } catch (error) {
+      console.error('Error fetching alerts:', error);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  useEffect(() => {
+    fetchAlerts();
+    
+    // Refresh alerts every 30 seconds
+    const interval = setInterval(fetchAlerts, 30000);
+    
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <Card>
@@ -37,7 +67,13 @@ export const AlertsWarnings: React.FC = () => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {alerts.length === 0 ? (
+        {loading ? (
+          <Alert className="border-blue-200 bg-blue-50">
+            <AlertDescription className="text-blue-700">
+              🔄 Loading recent alerts...
+            </AlertDescription>
+          </Alert>
+        ) : alerts.length === 0 ? (
           <Alert className="border-green-200 bg-green-50">
             <AlertDescription className="text-green-700">
               ✅ All recent vehicles passed checklist verification.

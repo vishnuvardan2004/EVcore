@@ -1,10 +1,10 @@
 import React from 'react';
-import { Input } from '../../../shared/components/ui/input';
-import { Label } from '../../../shared/components/ui/label';
-import { Button } from '../../../shared/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 import { Users, Upload } from 'lucide-react';
-import { cn } from '../../../shared/utils/cn';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../../../shared/components/ui/collapsible';
+import { cn } from '@/lib/utils';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown } from 'lucide-react';
 
 interface FamilyEmergencyData {

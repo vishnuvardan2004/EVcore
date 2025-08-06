@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { ChargingTrackerLayout } from '../components/ChargingTrackerLayout';
-import { Button } from '../../../shared/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import { useToast } from '../../../shared/hooks/use-toast';
+import { useToast } from '../../../hooks/use-toast';
 import { AccessForm } from '../components/AccessForm';
 import { StartChargingForm } from '../components/StartChargingForm';
 import { EndChargingForm } from '../components/EndChargingForm';

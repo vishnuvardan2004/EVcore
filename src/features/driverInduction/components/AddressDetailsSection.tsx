@@ -1,10 +1,10 @@
 import React from 'react';
-import { Label } from '../../../shared/components/ui/label';
-import { Button } from '../../../shared/components/ui/button';
-import { Textarea } from '../../../shared/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import { Home, Upload } from 'lucide-react';
-import { cn } from '../../../shared/utils/cn';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../../../shared/components/ui/collapsible';
+import { cn } from '@/lib/utils';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown } from 'lucide-react';
 
 interface AddressDetailsData {

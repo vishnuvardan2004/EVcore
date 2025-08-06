@@ -33,7 +33,7 @@ import {
   DollarSign,
   Eye
 } from 'lucide-react';
-import { databaseService } from '../services/database';
+import { databaseService } from '../services/databaseSimple';
 import { Employee, UserRole } from '../types';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
@@ -52,6 +52,8 @@ import { useToast } from '@/hooks/use-toast';
 type EmployeeStatus = 'Active' | 'On Leave' | 'Terminated';
 
 export const EmployeeManagement: React.FC = () => {
+  console.log('EmployeeManagement component is rendering...');
+  
   const { user } = useAuth();
   const { toast } = useToast();
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -71,7 +73,9 @@ export const EmployeeManagement: React.FC = () => {
   const fetchEmployees = async () => {
     try {
       setLoading(true);
+      console.log('Fetching employees...');
       const data = await databaseService.getEmployees();
+      console.log('Fetched employees:', data);
       setEmployees(data);
       setFilteredEmployees(data);
     } catch (error) {
@@ -862,3 +866,5 @@ export const EmployeeManagement: React.FC = () => {
     </div>
   );
 };
+
+export default EmployeeManagement;
