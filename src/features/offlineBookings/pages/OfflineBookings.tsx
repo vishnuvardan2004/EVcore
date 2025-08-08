@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AirportBookingForm } from '../components/AirportBookingForm';
 import { RentalPackageForm } from '../components/RentalPackageForm';
@@ -9,6 +10,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../../components/ui/tooltip';
+import { bookingService, BookingStats } from '../../../services/bookingService';
+import { useToast } from '../../../hooks/use-toast';
+import { useOfflineSync } from '../../../hooks/useOfflineSync';
 import { 
   Eye, 
   Plus, 
@@ -21,20 +25,55 @@ import {
   TrendingUp,
   ChevronLeft,
   ChevronRight,
-  Menu
+  Menu,
+  Home,
+  Loader2,
+  RefreshCw
 } from 'lucide-react';
 import { cn } from '../../../lib/utils';
 
 const OfflineBookings = () => {
+  const navigate = useNavigate();
   const [activeView, setActiveView] = useState<'create' | 'scheduled' | 'completed' | 'export'>('create');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [stats, setStats] = useState<BookingStats | null>(null);
+  const [loadingStats, setLoadingStats] = useState(true);
+  const { toast } = useToast();
+  const { isOnline } = useOfflineSync();
 
-  // Mock data for dashboard stats
-  const stats = {
-    scheduledRides: 24,
-    completedToday: 18,
-    totalRevenue: 15680,
-    activeVehicles: 12
+  // Load stats on component mount
+  useEffect(() => {
+    loadStats();
+  }, []);
+
+  const loadStats = async () => {
+    setLoadingStats(true);
+    try {
+      const data = await bookingService.getBookingStats();
+      setStats(data);
+    } catch (error) {
+      console.error('Error loading booking stats:', error);
+      toast({
+        title: "Stats Loading Failed",
+        description: "Failed to load booking statistics. Using default values.",
+        variant: "destructive",
+      });
+      // Fallback stats
+      setStats({
+        totalBookings: 0,
+        scheduledRides: 0,
+        completedToday: 0,
+        pendingPayments: 0,
+        totalRevenue: 0,
+        averageRating: 0,
+        activeVehicles: 0,
+        topDestinations: [],
+        revenueByType: {},
+        bookingsByStatus: {}
+      });
+    } finally {
+      setLoadingStats(false);
+    }
   };
 
   const sidebarItems = [
@@ -51,14 +90,15 @@ const OfflineBookings = () => {
       icon: Calendar,
       description: 'Future bookings',
       color: 'bg-orange-500',
-      count: stats.scheduledRides
+      count: stats?.scheduledRides || 0
     },
     {
       id: 'completed',
       label: 'Completed Rides',
       icon: CheckCircle,
       description: 'Ride history',
-      color: 'bg-green-500'
+      color: 'bg-green-500',
+      count: stats?.completedToday || 0
     },
     {
       id: 'export',
@@ -66,6 +106,13 @@ const OfflineBookings = () => {
       icon: Download,
       description: 'Download reports',
       color: 'bg-purple-500'
+    },
+    {
+      id: 'dashboard',
+      label: 'Back to Dashboard',
+      icon: Home,
+      description: 'Return to main dashboard',
+      color: 'bg-gray-500'
     }
   ];
 
@@ -145,119 +192,125 @@ const OfflineBookings = () => {
         </div>
 
         {/* Stats Section */}
-        <div className={cn("p-4", sidebarCollapsed ? "px-2" : "p-4")}>
-          {!sidebarCollapsed ? (
-            <div>
-              <h3 className="text-sm font-semibold text-blue-800 mb-3 flex items-center gap-2">
-                <TrendingUp className="w-4 h-4" />
-                Quick Stats
-              </h3>
-              <div className="grid grid-cols-2 gap-3">
-                <Card className="p-3 bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200 hover:shadow-md transition-shadow">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
-                      <Clock className="w-4 h-4 text-white" />
+        {loadingStats ? (
+          <div className="p-4 flex items-center justify-center">
+            <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+          </div>
+        ) : (
+          <div className={cn("p-4", sidebarCollapsed ? "px-2" : "p-4")}>
+            {!sidebarCollapsed ? (
+              <div>
+                <h3 className="text-sm font-semibold text-blue-800 mb-3 flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4" />
+                  Quick Stats
+                </h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <Card className="p-3 bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200 hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                        <Clock className="w-4 h-4 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-xl font-bold text-orange-800">{stats?.scheduledRides || 0}</p>
+                        <p className="text-xs text-orange-600">Scheduled</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-xl font-bold text-orange-800">{stats.scheduledRides}</p>
-                      <p className="text-xs text-orange-600">Scheduled</p>
+                  </Card>
+                  
+                  <Card className="p-3 bg-gradient-to-br from-green-50 to-green-100 border-green-200 hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+                        <CheckCircle className="w-4 h-4 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-xl font-bold text-green-800">{stats?.completedToday || 0}</p>
+                        <p className="text-xs text-green-600">Today</p>
+                      </div>
                     </div>
-                  </div>
-                </Card>
-                
-                <Card className="p-3 bg-gradient-to-br from-green-50 to-green-100 border-green-200 hover:shadow-md transition-shadow">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
-                      <CheckCircle className="w-4 h-4 text-white" />
+                  </Card>
+                  
+                  <Card className="p-3 bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                        <TrendingUp className="w-4 h-4 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-blue-800">₹{stats?.totalRevenue?.toLocaleString() || '0'}</p>
+                        <p className="text-xs text-blue-600">Revenue</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-xl font-bold text-green-800">{stats.completedToday}</p>
-                      <p className="text-xs text-green-600">Today</p>
+                  </Card>
+                  
+                  <Card className="p-3 bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
+                        <Car className="w-4 h-4 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-xl font-bold text-purple-800">{stats?.activeVehicles || 0}</p>
+                        <p className="text-xs text-purple-600">Active</p>
+                      </div>
                     </div>
-                  </div>
-                </Card>
-                
-                <Card className="p-3 bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 hover:shadow-md transition-shadow">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
-                      <TrendingUp className="w-4 h-4 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-blue-800">₹{stats.totalRevenue.toLocaleString()}</p>
-                      <p className="text-xs text-blue-600">Revenue</p>
-                    </div>
-                  </div>
-                </Card>
-                
-                <Card className="p-3 bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 hover:shadow-md transition-shadow">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
-                      <Car className="w-4 h-4 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-xl font-bold text-purple-800">{stats.activeVehicles}</p>
-                      <p className="text-xs text-purple-600">Active</p>
-                    </div>
-                  </div>
-                </Card>
+                  </Card>
+                </div>
               </div>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-500 rounded-xl flex items-center justify-center cursor-pointer hover:scale-105 transition-all duration-200 shadow-lg mx-auto">
-                      <Clock className="w-5 h-5 text-white" />
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">
-                    <p>{stats.scheduledRides} Scheduled Rides</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-500 rounded-xl flex items-center justify-center cursor-pointer hover:scale-105 transition-all duration-200 shadow-lg mx-auto">
-                      <CheckCircle className="w-5 h-5 text-white" />
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">
-                    <p>{stats.completedToday} Completed Today</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-500 rounded-xl flex items-center justify-center cursor-pointer hover:scale-105 transition-all duration-200 shadow-lg mx-auto">
-                      <TrendingUp className="w-5 h-5 text-white" />
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">
-                    <p>₹{stats.totalRevenue.toLocaleString()} Revenue</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-500 rounded-xl flex items-center justify-center cursor-pointer hover:scale-105 transition-all duration-200 shadow-lg mx-auto">
-                      <Car className="w-5 h-5 text-white" />
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">
-                    <p>{stats.activeVehicles} Active Vehicles</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
-          )}
-        </div>
+            ) : (
+              <div className="space-y-3">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-500 rounded-xl flex items-center justify-center cursor-pointer hover:scale-105 transition-all duration-200 shadow-lg mx-auto">
+                        <Clock className="w-5 h-5 text-white" />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">
+                      <p>{stats?.scheduledRides || 0} Scheduled Rides</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-500 rounded-xl flex items-center justify-center cursor-pointer hover:scale-105 transition-all duration-200 shadow-lg mx-auto">
+                        <CheckCircle className="w-5 h-5 text-white" />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">
+                      <p>{stats?.completedToday || 0} Completed Today</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-500 rounded-xl flex items-center justify-center cursor-pointer hover:scale-105 transition-all duration-200 shadow-lg mx-auto">
+                        <TrendingUp className="w-5 h-5 text-white" />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">
+                      <p>₹{stats?.totalRevenue?.toLocaleString() || '0'} Revenue</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-500 rounded-xl flex items-center justify-center cursor-pointer hover:scale-105 transition-all duration-200 shadow-lg mx-auto">
+                        <Car className="w-5 h-5 text-white" />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">
+                      <p>{stats?.activeVehicles || 0} Active Vehicles</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Navigation Menu */}
         <nav className="flex-1 p-2">
@@ -270,7 +323,13 @@ const OfflineBookings = () => {
                 <li key={item.id}>
                   <Button
                     variant="ghost"
-                    onClick={() => setActiveView(item.id as any)}
+                    onClick={() => {
+                      if (item.id === 'dashboard') {
+                        navigate('/');
+                      } else {
+                        setActiveView(item.id as any);
+                      }
+                    }}
                     className={cn(
                       "w-full justify-start gap-3 h-auto p-3 transition-all",
                       isActive 

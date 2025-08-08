@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 // EVCORE Platform - Main Application Entry Point
 import Dashboard from './pages/Dashboard';
 import VehicleTracker from './features/vehicleDeployment/pages/VehicleTracker';
+import VehicleDamagesPage from './pages/VehicleDamages';
 import RideHistory from './features/vehicleDeployment/pages/RideHistory';
 import LiveStatus from './features/vehicleDeployment/pages/LiveStatus';
 import Alerts from './features/vehicleDeployment/pages/Alerts';
@@ -58,6 +59,7 @@ const AppContent = () => {
             <Route path="/language" element={<LanguageSelector />} />
             <Route path="/audit-logs" element={<AuditLogs />} />
             <Route path="/vehicle-tracker" element={<VehicleTracker />} />
+            <Route path="/vehicle-damages" element={<VehicleDamagesPage />} />
             <Route path="/ride-history" element={<RideHistory />} />
             <Route path="/live-status" element={<LiveStatus />} />
             <Route path="/deployment-alerts" element={<Alerts />} />

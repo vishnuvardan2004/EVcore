@@ -12,7 +12,7 @@ export interface APIError {
   status?: number;
 }
 
-class APIService {
+export class APIService {
   private baseURL: string;
   
   constructor() {
@@ -23,7 +23,7 @@ class APIService {
     return localStorage.getItem('authToken');
   }
 
-  private async request<T>(
+  public async request<T>(
     endpoint: string, 
     options: RequestInit = {}
   ): Promise<APIResponse<T>> {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,114 +18,46 @@ import {
   Phone,
   Download,
   Eye,
-  Receipt
+  Receipt,
+  Loader2,
+  RefreshCw
 } from 'lucide-react';
 import { format, subDays } from 'date-fns';
-
-interface CompletedRide {
-  id: string;
-  customerName: string;
-  customerPhone: string;
-  pickupLocation: string;
-  dropLocation: string;
-  startTime: Date;
-  endTime: Date;
-  actualFare: number;
-  distance: number;
-  vehicleNumber: string;
-  driverName: string;
-  rideType: 'airport' | 'rental' | 'subscription';
-  paymentMethod: 'cash' | 'card' | 'upi' | 'wallet';
-  paymentStatus: 'paid' | 'pending' | 'refunded';
-  rating?: number;
-  feedback?: string;
-  duration: number; // in minutes
-}
-
-// Mock data for completed rides
-const mockCompletedRides: CompletedRide[] = [
-  {
-    id: 'CR001',
-    customerName: 'Anjali Sharma',
-    customerPhone: '+91 9876543210',
-    pickupLocation: 'Cyber City, Gurgaon',
-    dropLocation: 'IGI Airport Terminal 3',
-    startTime: new Date(Date.now() - 24 * 60 * 60 * 1000), // Yesterday
-    endTime: new Date(Date.now() - 24 * 60 * 60 * 1000 + 45 * 60 * 1000),
-    actualFare: 850,
-    distance: 28.5,
-    vehicleNumber: 'EV001',
-    driverName: 'Suresh Sharma',
-    rideType: 'airport',
-    paymentMethod: 'upi',
-    paymentStatus: 'paid',
-    rating: 5,
-    feedback: 'Excellent service, clean vehicle',
-    duration: 45
-  },
-  {
-    id: 'CR002',
-    customerName: 'Rohit Mehta',
-    customerPhone: '+91 9123456789',
-    pickupLocation: 'DLF Phase 2',
-    dropLocation: 'Connaught Place',
-    startTime: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-    endTime: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000 + 35 * 60 * 1000),
-    actualFare: 420,
-    distance: 15.2,
-    vehicleNumber: 'EV003',
-    driverName: 'Amit Kumar',
-    rideType: 'rental',
-    paymentMethod: 'cash',
-    paymentStatus: 'paid',
-    rating: 4,
-    duration: 35
-  },
-  {
-    id: 'CR003',
-    customerName: 'Priya Singh',
-    customerPhone: '+91 9876512345',
-    pickupLocation: 'Sector 18 Market',
-    dropLocation: 'Golf Course Road',
-    startTime: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-    endTime: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000 + 25 * 60 * 1000),
-    actualFare: 180,
-    distance: 8.7,
-    vehicleNumber: 'EV002',
-    driverName: 'Raj Patel',
-    rideType: 'subscription',
-    paymentMethod: 'wallet',
-    paymentStatus: 'paid',
-    rating: 5,
-    feedback: 'Great driver, reached on time',
-    duration: 25
-  },
-  {
-    id: 'CR004',
-    customerName: 'Vikash Kumar',
-    customerPhone: '+91 9345678901',
-    pickupLocation: 'IFFCO Chowk Metro',
-    dropLocation: 'IGI Airport Terminal 1',
-    startTime: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
-    endTime: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000 + 50 * 60 * 1000),
-    actualFare: 750,
-    distance: 32.1,
-    vehicleNumber: 'EV001',
-    driverName: 'Suresh Sharma',
-    rideType: 'airport',
-    paymentMethod: 'card',
-    paymentStatus: 'paid',
-    rating: 4,
-    duration: 50
-  }
-];
+import { useToast } from '@/hooks/use-toast';
+import { bookingService, BookingData } from '../../../services/bookingService';
+import { useOfflineSync } from '../../../hooks/useOfflineSync';
 
 export const CompletedRides: React.FC = () => {
-  const [rides, setRides] = useState<CompletedRide[]>(mockCompletedRides);
+  const [rides, setRides] = useState<BookingData[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRideType, setFilterRideType] = useState<string>('all');
   const [filterPaymentMethod, setFilterPaymentMethod] = useState<string>('all');
   const [dateRange, setDateRange] = useState<{from?: Date; to?: Date}>({});
+  const { toast } = useToast();
+  const { isOnline } = useOfflineSync();
+
+  // Load completed rides on component mount
+  useEffect(() => {
+    loadCompletedRides();
+  }, []);
+
+  const loadCompletedRides = async () => {
+    setLoading(true);
+    try {
+      const data = await bookingService.getCompletedRides(30); // Last 30 days
+      setRides(data);
+    } catch (error) {
+      console.error('Error loading completed rides:', error);
+      toast({
+        title: "Error Loading Rides",
+        description: "Failed to load completed rides. Using cached data if available.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getRideTypeColor = (type: string) => {
     switch (type) {
@@ -161,19 +93,21 @@ export const CompletedRides: React.FC = () => {
     const matchesSearch = 
       ride.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       ride.customerPhone.includes(searchTerm) ||
-      ride.vehicleNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ride.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ride.driverName.toLowerCase().includes(searchTerm.toLowerCase());
+      ride.vehicleNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ride.id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ride.pilotName?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesRideType = filterRideType === 'all' || ride.rideType === filterRideType;
-    const matchesPaymentMethod = filterPaymentMethod === 'all' || ride.paymentMethod === filterPaymentMethod;
+    const matchesRideType = filterRideType === 'all' || ride.bookingType === filterRideType;
+    const matchesPaymentMethod = filterPaymentMethod === 'all' || ride.paymentMode === filterPaymentMethod;
     
     return matchesSearch && matchesRideType && matchesPaymentMethod;
   });
 
-  const totalRevenue = filteredRides.reduce((sum, ride) => sum + ride.actualFare, 0);
-  const totalDistance = filteredRides.reduce((sum, ride) => sum + ride.distance, 0);
-  const averageRating = filteredRides.reduce((sum, ride) => sum + (ride.rating || 0), 0) / filteredRides.length;
+  const totalRevenue = filteredRides.reduce((sum, ride) => sum + (ride.actualCost || ride.estimatedCost), 0);
+  const totalDistance = filteredRides.reduce((sum, ride) => sum + (ride.distance || 0), 0);
+  const averageRating = filteredRides.length > 0 
+    ? filteredRides.reduce((sum, ride) => sum + (ride.rating || 0), 0) / filteredRides.length 
+    : 0;
 
   return (
     <div className="space-y-6">
@@ -380,20 +314,20 @@ export const CompletedRides: React.FC = () => {
                   <TableCell>
                     <div>
                       <p className="font-medium text-sm">{ride.vehicleNumber}</p>
-                      <p className="text-sm text-gray-500">{ride.driverName}</p>
+                      <p className="text-sm text-gray-500">{ride.pilotName || 'Driver'}</p>
                     </div>
                   </TableCell>
                   
                   <TableCell>
-                    <Badge className={getRideTypeColor(ride.rideType)}>
-                      {ride.rideType}
+                    <Badge className={getRideTypeColor(ride.bookingType)}>
+                      {ride.bookingType}
                     </Badge>
                   </TableCell>
                   
                   <TableCell>
                     <div className="space-y-1">
-                      <Badge className={getPaymentMethodColor(ride.paymentMethod)}>
-                        {ride.paymentMethod}
+                      <Badge className={getPaymentMethodColor(ride.paymentMode)}>
+                        {ride.paymentMode}
                       </Badge>
                       <p className="text-xs text-green-600 font-medium">
                         {ride.paymentStatus}
@@ -415,7 +349,7 @@ export const CompletedRides: React.FC = () => {
                   </TableCell>
                   
                   <TableCell>
-                    <p className="font-medium text-green-600">₹{ride.actualFare}</p>
+                    <p className="font-medium text-green-600">₹{ride.actualCost || ride.estimatedCost}</p>
                   </TableCell>
                   
                   <TableCell>

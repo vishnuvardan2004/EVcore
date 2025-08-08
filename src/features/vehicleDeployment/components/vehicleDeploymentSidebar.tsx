@@ -8,7 +8,8 @@ import {
   Users,
   Home,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  AlertTriangle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -46,6 +47,12 @@ const menuItems = [
     url: '/deployment-alerts',
     icon: Users,
     description: 'Notifications & warnings'
+  },
+  {
+    title: 'Damages',
+    url: '/vehicle-damages',
+    icon: AlertTriangle,
+    description: 'Vehicle damage reports'
   },
   {
     title: 'Back to Dashboard',

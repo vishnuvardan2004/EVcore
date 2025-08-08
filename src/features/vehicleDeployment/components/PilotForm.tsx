@@ -92,25 +92,78 @@ export const PilotForm: React.FC<PilotFormProps> = ({
     setVehicleChecklist(checklist as VehicleChecklist);
   };
 
-  const handleScanSupervisor = () => {
-    const mockSupervisorName = `SUP-${Math.floor(Math.random() * 999)}`;
-    setFormData(prev => ({ ...prev, supervisorName: mockSupervisorName }));
+  const handleScanSupervisor = async () => {
+    try {
+      // In a real implementation, this would:
+      // 1. Access device camera/barcode scanner
+      // 2. Scan supervisor ID card/QR code
+      // 3. Validate against employee database
+      // 4. Return supervisor details
+      
+      // For now, prompt for manual entry
+      const supervisorId = prompt('Enter Supervisor ID or scan QR code:');
+      if (supervisorId) {
+        // In production, validate this ID against your employee database
+        const supervisorName = `Supervisor: ${supervisorId}`;
+        setFormData(prev => ({ ...prev, supervisorName }));
+      }
+    } catch (error) {
+      console.error('Error scanning supervisor ID:', error);
+    }
   };
 
-  const captureDriverPhoto = () => {
-    startCamera();
-    setTimeout(() => {
-      const mockPhoto = `data:image/jpeg;base64,mockDriverPhoto${Date.now()}`;
-      setDriverPhoto(mockPhoto);
-    }, 2000);
+  const captureDriverPhoto = async () => {
+    try {
+      // In production, this would use the device camera
+      // For now, use file input as fallback
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.capture = 'user'; // Request front camera
+      
+      input.onchange = (e) => {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const photoData = e.target?.result as string;
+            setDriverPhoto(photoData);
+          };
+          reader.readAsDataURL(file);
+        }
+      };
+      
+      input.click();
+    } catch (error) {
+      console.error('Error capturing driver photo:', error);
+    }
   };
 
-  const captureVehiclePhoto = () => {
-    startCamera();
-    setTimeout(() => {
-      const mockPhoto = `data:image/jpeg;base64,mockVehiclePhoto${Date.now()}`;
-      setVehiclePhotos(prev => [...prev, mockPhoto]);
-    }, 2000);
+  const captureVehiclePhoto = async () => {
+    try {
+      // In production, this would use the device camera
+      // For now, use file input as fallback
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.capture = 'environment'; // Request back camera
+      
+      input.onchange = (e) => {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const photoData = e.target?.result as string;
+            setVehiclePhotos(prev => [...prev, photoData]);
+          };
+          reader.readAsDataURL(file);
+        }
+      };
+      
+      input.click();
+    } catch (error) {
+      console.error('Error capturing vehicle photo:', error);
+    }
   };
 
   // Supervisor selfie functions

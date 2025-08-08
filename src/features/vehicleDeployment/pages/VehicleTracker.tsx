@@ -17,7 +17,6 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { vehicleService } from '../../../services/database';
-import { createSampleDeployments } from '../utils/sampleData';
 import { useToast } from '../../../hooks/use-toast';
 import { Button } from '@/components/ui/button';
 
@@ -30,33 +29,6 @@ const VehicleTracker = () => {
   });
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-
-  // Development utility function
-  const handleCreateSampleData = async () => {
-    try {
-      const success = await createSampleDeployments();
-      if (success) {
-        toast({
-          title: "Sample Data Created",
-          description: "Sample deployment data has been added for testing",
-        });
-        fetchStats(); // Refresh stats after creating sample data
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to create sample data",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error('Error creating sample data:', error);
-      toast({
-        title: "Error",
-        description: "Failed to create sample data",
-        variant: "destructive",
-      });
-    }
-  };
 
   const fetchStats = async () => {
     try {
@@ -119,29 +91,7 @@ const VehicleTracker = () => {
           </div>
         </div>
 
-        {/* Development Utilities - only show in development mode */}
-        {import.meta.env.DEV && (
-          <Card className="border-dashed border-2 border-gray-300 bg-gray-50">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-medium text-gray-700">Development Utilities</h3>
-                  <p className="text-xs text-gray-500">
-                    Create sample data to test vehicle deployment features
-                  </p>
-                </div>
-                <Button
-                  onClick={handleCreateSampleData}
-                  variant="outline"
-                  size="sm"
-                  className="text-xs"
-                >
-                  Create Sample Data
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+
 
         {/* Enhanced Statistics Dashboard - repositioned below vehicle entry */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">

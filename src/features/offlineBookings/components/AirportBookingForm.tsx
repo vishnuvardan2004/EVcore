@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -6,12 +6,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { Plane } from 'lucide-react';
+import { Plane, Loader2 } from 'lucide-react';
 import { CustomerInformationSection } from './forms/CustomerInformationSection';
 import { BookingTypeSection } from './forms/BookingTypeSection';
 import { ScheduleDetailsSection } from './forms/ScheduleDetailsSection';
 import { VehicleDetailsSection } from './forms/VehicleDetailsSection';
 import { PaymentDetailsSection } from './forms/PaymentDetailsSection';
+import { bookingService } from '../../../services/bookingService';
+import { useOfflineSync } from '../../../hooks/useOfflineSync';
 
 const airportBookingSchema = z.object({
   customerName: z.string().min(2, 'Customer name must be at least 2 characters'),
@@ -43,6 +45,8 @@ interface AirportBookingFormProps {
 
 export const AirportBookingForm = ({ onBack }: AirportBookingFormProps = {}) => {
   const { toast } = useToast();
+  const { isOnline } = useOfflineSync();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const form = useForm<AirportBookingFormData>({
     resolver: zodResolver(airportBookingSchema),
@@ -61,32 +65,53 @@ export const AirportBookingForm = ({ onBack }: AirportBookingFormProps = {}) => 
     form.setValue('date', currentDate);
   }, [form]);
 
-  const onSubmit = (data: AirportBookingFormData) => {
-    console.log('Airport booking submitted:', data);
+  const onSubmit = async (data: AirportBookingFormData) => {
+    setIsSubmitting(true);
     
-    // Save to localStorage
-    const existingBookings = JSON.parse(localStorage.getItem('airportBookings') || '[]');
-    const newBooking = {
-      id: Date.now(),
-      type: 'Airport',
-      ...data,
-      createdAt: new Date().toISOString(),
-    };
-    localStorage.setItem('airportBookings', JSON.stringify([...existingBookings, newBooking]));
+    try {
+      const bookingData = {
+        customerName: data.customerName,
+        customerPhone: data.customerPhone,
+        bookingType: 'airport' as const,
+        subType: data.bookingType,
+        scheduledDate: data.date,
+        scheduledTime: data.time,
+        pilotName: data.pilotName,
+        vehicleNumber: data.vehicleNumber,
+        estimatedCost: parseFloat(data.cost),
+        paymentMode: data.paymentMode,
+        paymentStatus: (data.paymentMode === 'Cash' || data.paymentMode === 'UPI' ? 'paid' : 'partial') as 'paid' | 'partial' | 'pending' | 'failed',
+        partPaymentCash: data.partPaymentCash ? parseFloat(data.partPaymentCash) : undefined,
+        partPaymentUPI: data.partPaymentUPI ? parseFloat(data.partPaymentUPI) : undefined,
+      };
 
-    toast({
-      title: "Airport Booking Created",
-      description: `Booking for ${data.customerName} has been successfully created.`,
-    });
+      const createdBooking = await bookingService.createBooking(bookingData);
+      
+      toast({
+        title: "Airport Booking Created Successfully",
+        description: `Booking for ${data.customerName} has been created. Booking ID: ${createdBooking.id?.slice(-8)}`,
+      });
 
-    form.reset();
-    
-    // Re-apply auto-fill date after reset
-    const resetNow = new Date();
-    const resetCurrentDate = resetNow.toISOString().split('T')[0];
-    
-    form.setValue('date', resetCurrentDate);
-    form.setValue('paymentMode', 'Cash');
+      form.reset();
+      
+      // Re-apply auto-fill date after reset
+      const resetNow = new Date();
+      const resetCurrentDate = resetNow.toISOString().split('T')[0];
+      
+      form.setValue('date', resetCurrentDate);
+      form.setValue('paymentMode', 'Cash');
+      
+    } catch (error) {
+      console.error('Error creating airport booking:', error);
+      
+      toast({
+        title: "Booking Creation Failed",
+        description: error instanceof Error ? error.message : "Failed to create booking. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -144,8 +169,20 @@ export const AirportBookingForm = ({ onBack }: AirportBookingFormProps = {}) => 
                   ← Back to Home
                 </Button>
               )}
-              <Button type="submit" size="lg" className="min-w-32 ml-auto">
-                Create Booking
+              <Button 
+                type="submit" 
+                size="lg" 
+                className="min-w-32 ml-auto"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  'Create Booking'
+                )}
               </Button>
             </div>
           </form>

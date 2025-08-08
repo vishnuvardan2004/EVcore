@@ -8,7 +8,14 @@ import {
   Settings,
   Globe,
   FileCheck,
-  LogOut
+  LogOut,
+  Car,
+  MapPin,
+  TrendingUp,
+  AlertTriangle,
+  Calendar,
+  Wrench,
+  Database
 } from 'lucide-react';
 import {
   Sidebar,
@@ -33,6 +40,18 @@ const menuItems = [
     description: "EVCORE Home"
   },
   {
+    title: "Smart Bookings",
+    url: "/offline-bookings",
+    icon: Calendar,
+    description: "Booking management"
+  },
+  {
+    title: "Database",
+    url: "/database",
+    icon: Database,
+    description: "Asset & personnel management"
+  },
+  {
     title: "Smart Widgets",
     url: "/smart-widgets",
     icon: BarChart,
@@ -43,6 +62,45 @@ const menuItems = [
     url: "/global-reports",
     icon: FileText,
     description: "Platform reports"
+  }
+];
+
+const vehicleDeploymentItems = [
+  {
+    title: "Vehicle Tracker",
+    url: "/vehicle-tracker",
+    icon: Car,
+    description: "Deploy & track vehicles"
+  },
+  {
+    title: "Live Status",
+    url: "/live-status",
+    icon: MapPin,
+    description: "Real-time deployments"
+  },
+  {
+    title: "Ride History",
+    url: "/ride-history",
+    icon: Calendar,
+    description: "Trip records"
+  },
+  {
+    title: "Vehicle Damages",
+    url: "/vehicle-damages",
+    icon: Wrench,
+    description: "Damage tracking"
+  },
+  {
+    title: "Alerts",
+    url: "/deployment-alerts",
+    icon: AlertTriangle,
+    description: "System alerts"
+  },
+  {
+    title: "Reports",
+    url: "/deployment-reports",
+    icon: TrendingUp,
+    description: "Analytics & insights"
   }
 ];
 
@@ -167,6 +225,20 @@ export const NavigationSidebar: React.FC = () => {
           <SidebarGroupContent>
             <SidebarMenu className="space-y-2">
               {menuItems.map(renderMenuItem)}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Vehicle Deployment */}
+        <SidebarGroup className="mt-8">
+          <div className="px-4 py-2">
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+              Vehicle Deployment
+            </h3>
+          </div>
+          <SidebarGroupContent>
+            <SidebarMenu className="space-y-2">
+              {vehicleDeploymentItems.map(renderMenuItem)}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

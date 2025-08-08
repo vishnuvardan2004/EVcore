@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,81 +20,90 @@ import {
   MapPin,
   Phone,
   MoreVertical,
-  AlertTriangle
+  AlertTriangle,
+  Loader2,
+  RefreshCw
 } from 'lucide-react';
 import { format, addDays, isToday, isTomorrow } from 'date-fns';
-
-interface ScheduledRide {
-  id: string;
-  customerName: string;
-  customerPhone: string;
-  pickupLocation: string;
-  dropLocation: string;
-  scheduledDate: Date;
-  scheduledTime: string;
-  rideType: 'airport' | 'rental' | 'subscription';
-  vehicleNumber?: string;
-  driverName?: string;
-  estimatedFare: number;
-  status: 'confirmed' | 'assigned' | 'pending' | 'cancelled';
-  specialRequirements?: string;
-  paymentStatus: 'pending' | 'paid' | 'partial';
-}
-
-// Mock data for scheduled rides
-const mockScheduledRides: ScheduledRide[] = [
-  {
-    id: 'SR001',
-    customerName: 'Rajesh Kumar',
-    customerPhone: '+91 9876543210',
-    pickupLocation: 'Sector 18, Gurgaon',
-    dropLocation: 'IGI Airport Terminal 3',
-    scheduledDate: new Date(),
-    scheduledTime: '18:30',
-    rideType: 'airport',
-    vehicleNumber: 'EV001',
-    driverName: 'Suresh Sharma',
-    estimatedFare: 850,
-    status: 'assigned',
-    paymentStatus: 'paid'
-  },
-  {
-    id: 'SR002',
-    customerName: 'Priya Singh',
-    customerPhone: '+91 9123456789',
-    pickupLocation: 'DLF Phase 1',
-    dropLocation: 'Cyber City',
-    scheduledDate: addDays(new Date(), 1),
-    scheduledTime: '09:00',
-    rideType: 'rental',
-    estimatedFare: 450,
-    status: 'confirmed',
-    paymentStatus: 'pending',
-    specialRequirements: 'Child seat required'
-  },
-  {
-    id: 'SR003',
-    customerName: 'Amit Patel',
-    customerPhone: '+91 9876512345',
-    pickupLocation: 'MG Road Metro',
-    dropLocation: 'IGI Airport Terminal 1',
-    scheduledDate: addDays(new Date(), 2),
-    scheduledTime: '06:00',
-    rideType: 'airport',
-    estimatedFare: 750,
-    status: 'pending',
-    paymentStatus: 'pending'
-  }
-];
+import { useToast } from '@/hooks/use-toast';
+import { bookingService, BookingData } from '../../../services/bookingService';
+import { useOfflineSync } from '../../../hooks/useOfflineSync';
 
 export const ScheduledRides: React.FC = () => {
-  const [rides, setRides] = useState<ScheduledRide[]>(mockScheduledRides);
+  const [rides, setRides] = useState<BookingData[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterRideType, setFilterRideType] = useState<string>('all');
   const [dateRange, setDateRange] = useState<{from?: Date; to?: Date}>({});
-  const [selectedRide, setSelectedRide] = useState<ScheduledRide | null>(null);
+  const [selectedRide, setSelectedRide] = useState<BookingData | null>(null);
   const [showRescheduleDialog, setShowRescheduleDialog] = useState(false);
+  const { toast } = useToast();
+  const { isOnline } = useOfflineSync();
+
+  // Load scheduled rides on component mount
+  useEffect(() => {
+    loadScheduledRides();
+  }, []);
+
+  const loadScheduledRides = async () => {
+    setLoading(true);
+    try {
+      const data = await bookingService.getScheduledRides();
+      setRides(data);
+    } catch (error) {
+      console.error('Error loading scheduled rides:', error);
+      toast({
+        title: "Error Loading Rides",
+        description: "Failed to load scheduled rides. Using cached data if available.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStatusUpdate = async (rideId: string, newStatus: BookingData['status']) => {
+    try {
+      await bookingService.updateBookingStatus(rideId, newStatus);
+      setRides(rides.map(ride => 
+        ride.id === rideId ? { ...ride, status: newStatus, updatedAt: new Date().toISOString() } : ride
+      ));
+      
+      toast({
+        title: "Status Updated",
+        description: `Ride status updated to ${newStatus}`,
+      });
+    } catch (error) {
+      console.error('Error updating ride status:', error);
+      toast({
+        title: "Update Failed",
+        description: "Failed to update ride status. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCancelRide = async (rideId: string, reason?: string) => {
+    try {
+      await bookingService.cancelBooking(rideId, reason);
+      setRides(rides.map(ride => 
+        ride.id === rideId ? { ...ride, status: 'cancelled' as const, updatedAt: new Date().toISOString() } : ride
+      ));
+      
+      toast({
+        title: "Ride Cancelled",
+        description: "The ride has been successfully cancelled.",
+      });
+    } catch (error) {
+      console.error('Error cancelling ride:', error);
+      toast({
+        title: "Cancellation Failed",
+        description: "Failed to cancel the ride. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -115,7 +124,8 @@ export const ScheduledRides: React.FC = () => {
     }
   };
 
-  const getDateDisplay = (date: Date) => {
+  const getDateDisplay = (dateString: string) => {
+    const date = new Date(dateString);
     if (isToday(date)) return 'Today';
     if (isTomorrow(date)) return 'Tomorrow';
     return format(date, 'MMM dd, yyyy');
@@ -126,21 +136,21 @@ export const ScheduledRides: React.FC = () => {
       ride.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       ride.customerPhone.includes(searchTerm) ||
       ride.vehicleNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ride.id.toLowerCase().includes(searchTerm.toLowerCase());
+      ride.id?.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = filterStatus === 'all' || ride.status === filterStatus;
-    const matchesRideType = filterRideType === 'all' || ride.rideType === filterRideType;
+    const matchesRideType = filterRideType === 'all' || ride.bookingType === filterRideType;
     
     return matchesSearch && matchesStatus && matchesRideType;
   });
 
-  const handleDeleteRide = (rideId: string) => {
-    setRides(rides.filter(ride => ride.id !== rideId));
-  };
-
-  const handleReschedule = (ride: ScheduledRide) => {
+  const handleReschedule = (ride: BookingData) => {
     setSelectedRide(ride);
     setShowRescheduleDialog(true);
+  };
+
+  const handleDeleteRide = async (rideId: string) => {
+    await handleCancelRide(rideId, 'Deleted by operator');
   };
 
   return (
@@ -151,9 +161,24 @@ export const ScheduledRides: React.FC = () => {
           <h2 className="text-2xl font-bold text-gray-900">Scheduled Rides</h2>
           <p className="text-gray-600">Manage future bookings and assignments</p>
         </div>
-        <Badge variant="outline" className="text-lg px-3 py-1">
-          {filteredRides.length} rides scheduled
-        </Badge>
+        <div className="flex items-center gap-3">
+          <Button 
+            variant="outline" 
+            onClick={loadScheduledRides}
+            disabled={loading}
+            className="gap-2"
+          >
+            {loading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <RefreshCw className="w-4 h-4" />
+            )}
+            Refresh
+          </Button>
+          <Badge variant="outline" className="text-lg px-3 py-1">
+            {filteredRides.length} rides scheduled
+          </Badge>
+        </div>
       </div>
 
       {/* Filters */}
@@ -277,8 +302,8 @@ export const ScheduledRides: React.FC = () => {
                   </TableCell>
                   
                   <TableCell>
-                    <Badge className={getRideTypeColor(ride.rideType)}>
-                      {ride.rideType}
+                    <Badge className={getRideTypeColor(ride.bookingType)}>
+                      {ride.bookingType}
                     </Badge>
                   </TableCell>
                   
@@ -286,7 +311,7 @@ export const ScheduledRides: React.FC = () => {
                     {ride.vehicleNumber ? (
                       <div>
                         <p className="font-medium">{ride.vehicleNumber}</p>
-                        <p className="text-sm text-gray-500">{ride.driverName}</p>
+                        <p className="text-sm text-gray-500">{ride.pilotName || 'Driver TBA'}</p>
                       </div>
                     ) : (
                       <Badge variant="outline">Unassigned</Badge>
@@ -301,7 +326,7 @@ export const ScheduledRides: React.FC = () => {
                   
                   <TableCell>
                     <div>
-                      <p className="font-medium">₹{ride.estimatedFare}</p>
+                      <p className="font-medium">₹{ride.estimatedCost}</p>
                       <Badge 
                         variant={ride.paymentStatus === 'paid' ? 'default' : 'outline'}
                         className="text-xs"

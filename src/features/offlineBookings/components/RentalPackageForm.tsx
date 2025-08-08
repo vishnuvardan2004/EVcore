@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -9,8 +9,10 @@ import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Car } from 'lucide-react';
+import { Car, Loader2 } from 'lucide-react';
 import { CustomerInformationSection } from './forms/CustomerInformationSection';
+import { bookingService } from '../../../services/bookingService';
+import { useOfflineSync } from '../../../hooks/useOfflineSync';
 //import { TimeInput } from '@/components/ui/time-input';
 
 const rentalPackageSchema = z.object({
@@ -44,6 +46,8 @@ interface RentalPackageFormProps {
 
 export const RentalPackageForm = ({ onBack }: RentalPackageFormProps = {}) => {
   const { toast } = useToast();
+  const { isOnline } = useOfflineSync();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const form = useForm<RentalPackageFormData>({
     resolver: zodResolver(rentalPackageSchema),
@@ -62,32 +66,55 @@ export const RentalPackageForm = ({ onBack }: RentalPackageFormProps = {}) => {
     form.setValue('date', currentDate);
   }, [form]);
 
-  const onSubmit = (data: RentalPackageFormData) => {
-    console.log('Rental package booking submitted:', data);
+  const onSubmit = async (data: RentalPackageFormData) => {
+    setIsSubmitting(true);
     
-    // Save to localStorage
-    const existingBookings = JSON.parse(localStorage.getItem('rentalBookings') || '[]');
-    const newBooking = {
-      id: Date.now(),
-      type: 'Rental Package',
-      ...data,
-      createdAt: new Date().toISOString(),
-    };
-    localStorage.setItem('rentalBookings', JSON.stringify([...existingBookings, newBooking]));
+    try {
+      const bookingData = {
+        customerName: data.customerName,
+        customerPhone: data.customerPhone,
+        bookingType: 'rental' as const,
+        subType: 'package' as const,
+        pickupLocation: data.pickupLocation,
+        dropLocation: data.dropLocation,
+        scheduledDate: data.date,
+        scheduledTime: data.time,
+        pilotName: data.pilotName,
+        vehicleNumber: data.vehicleNumber,
+        estimatedCost: parseFloat(data.cost),
+        paymentMode: data.paymentMode,
+        paymentStatus: (data.paymentMode === 'Cash' || data.paymentMode === 'UPI' ? 'paid' : 'partial') as 'paid' | 'partial' | 'pending' | 'failed',
+        partPaymentCash: data.partPaymentCash ? parseFloat(data.partPaymentCash) : undefined,
+        partPaymentUPI: data.partPaymentUPI ? parseFloat(data.partPaymentUPI) : undefined,
+      };
 
-    toast({
-      title: "Rental Package Booking Created",
-      description: `Booking for ${data.customerName} has been successfully created.`,
-    });
+      const createdBooking = await bookingService.createBooking(bookingData);
+      
+      toast({
+        title: "Rental Package Booking Created Successfully",
+        description: `Booking for ${data.customerName} has been created. Booking ID: ${createdBooking.id?.slice(-8)}`,
+      });
 
-    form.reset();
-    
-    // Re-apply auto-fill date after reset
-    const resetNow = new Date();
-    const resetCurrentDate = resetNow.toISOString().split('T')[0];
-    
-    form.setValue('date', resetCurrentDate);
-    form.setValue('paymentMode', 'Cash');
+      form.reset();
+      
+      // Re-apply auto-fill date after reset
+      const resetNow = new Date();
+      const resetCurrentDate = resetNow.toISOString().split('T')[0];
+      
+      form.setValue('date', resetCurrentDate);
+      form.setValue('paymentMode', 'Cash');
+      
+    } catch (error) {
+      console.error('Error creating rental package booking:', error);
+      
+      toast({
+        title: "Booking Creation Failed",
+        description: error instanceof Error ? error.message : "Failed to create booking. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -281,8 +308,20 @@ export const RentalPackageForm = ({ onBack }: RentalPackageFormProps = {}) => {
                   ← Back to Home
                 </Button>
               )}
-              <Button type="submit" size="lg" className="min-w-32 ml-auto">
-                Create Booking
+              <Button 
+                type="submit" 
+                size="lg" 
+                className="min-w-32 ml-auto"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  'Create Booking'
+                )}
               </Button>
             </div>
           </form>

@@ -18,7 +18,15 @@ export const useRideHistoryData = () => {
       const allDeployments = await vehicleService.getDeploymentHistory();
       // Only show completed deployments (those with both OUT and IN data)
       const completedDeployments = allDeployments.filter(d => d.inTimestamp && d.outTimestamp);
-      setDeployments(completedDeployments);
+      
+      // Sort by most recent OUT timestamp first
+      const sortedDeployments = completedDeployments.sort((a, b) => {
+        const aTime = new Date(a.outTimestamp!).getTime();
+        const bTime = new Date(b.outTimestamp!).getTime();
+        return bTime - aTime; // Most recent first
+      });
+      
+      setDeployments(sortedDeployments);
     } catch (error) {
       console.error('Error loading deployments:', error);
       toast({

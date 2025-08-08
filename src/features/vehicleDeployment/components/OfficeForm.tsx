@@ -33,10 +33,24 @@ export const OfficeForm: React.FC<OfficeFormProps> = ({
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleScanSupervisor = () => {
-    // Simulate ID scan
-    const mockSupervisorName = `SUP-${Math.floor(Math.random() * 999)}`;
-    setFormData(prev => ({ ...prev, supervisorName: mockSupervisorName }));
+  const handleScanSupervisor = async () => {
+    try {
+      // In a real implementation, this would:
+      // 1. Access device camera/barcode scanner
+      // 2. Scan supervisor ID card/QR code
+      // 3. Validate against employee database
+      // 4. Return supervisor details
+      
+      // For now, prompt for manual entry
+      const supervisorId = prompt('Enter Supervisor ID or scan QR code:');
+      if (supervisorId) {
+        // In production, validate this ID against your employee database
+        const supervisorName = `Supervisor: ${supervisorId}`;
+        setFormData(prev => ({ ...prev, supervisorName }));
+      }
+    } catch (error) {
+      console.error('Error scanning supervisor ID:', error);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {

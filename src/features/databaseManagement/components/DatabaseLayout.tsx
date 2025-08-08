@@ -13,7 +13,7 @@ import {
   Users,
   UserCheck,
   BarChart3,
-  Settings,
+  Home,
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
@@ -81,10 +81,10 @@ const sidebarItems = [
     ]
   },
   {
-    title: 'Settings',
-    icon: Settings,
-    href: '/database/settings',
-    description: 'Database configuration'
+    title: 'Back to Dashboard',
+    icon: Home,
+    href: '/',
+    description: 'Return to main dashboard'
   }
 ];
 
